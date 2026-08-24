@@ -205,7 +205,7 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
 
     <!-- QUALIDADE -->
     <div class="painel ativo" id="painelQualidade">
-      <div class="card">
+      <div class="card" id="cardNovaAvaliacao">
         <h2>📝 Nova avaliação de atendimento</h2>
         <div class="aviso-help">💡 <strong>Antes de pontuar:</strong> abra a conversa no Salesmartly em outra aba e confira nas Informações Básicas o contato do cliente (número ou @). O contato é obrigatório para auditoria. A nota é ponderada por categoria e nunca ultrapassa 100 pontos.</div>
         <div class="grid2">
@@ -577,7 +577,7 @@ async function api(acao, dados = {}){
     const r = await fetch(URL_APPS_SCRIPT.trim(), {
       method:'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ acao, ...dados })
+      body: JSON.stringify({ acao, perfil: sessao ? sessao.perfil : '', ...dados })
     });
     const texto = await r.text();
     try {
@@ -890,6 +890,10 @@ async function entrarSistema(){
   }catch(e){ console.error(e); }
   try{ const g = byId('guiaGestao'); if(g) g.style.display = sessao.perfil === 'ADM' ? 'inline-block' : 'none'; }catch(e){ console.error(e); }
   try{ const b = byId('btnNovoComunicado'); if(b) b.style.display = sessao.perfil === 'ADM' ? 'inline-block' : 'none'; }catch(e){ console.error(e); }
+  try{
+    const cardNova = byId('cardNovaAvaliacao');
+    if(cardNova) cardNova.style.display = String(sessao.perfil).toLowerCase() === 'atendente' ? 'none' : 'block';
+  }catch(e){ console.error(e); }
   try{ const dt = byId('dtAvaliacao'); if(dt) dt.value = dataHoraNoFuso(fusoSelecionado); }catch(e){ console.error(e); }
   try{ definirFusoSelect(); }catch(e){ console.error(e); }
 
@@ -1010,7 +1014,7 @@ function calcularTotal(){
 
 /* ============ ENVIO DA AVALIAÇÃO ============ */
 async function enviarAvaliacao(){
-  if(sessao.perfil === 'Atendente'){ toastErro('O atendente não pontua avaliações.'); return; }
+  if(String(sessao.perfil).toLowerCase() === 'atendente'){ toastErro('O atendente não pontua avaliações.'); return; }
   const contato = byId('contatoCliente').value.trim();
   const avaliado = byId('avaliado').value;
   const dtContato = byId('dtContato').value;
