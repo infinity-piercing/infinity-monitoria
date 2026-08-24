@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitoria de Qualidade — Infinity Piercing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde-escuro:#0A312B; --verde-medio:#0E443B; --verde-claro:#12705E; --verde-suave:#1E8F78; --verde-agua:#2AA198;
+    --fundo:#F6FAF9; --branco:#FFFFFF; --cinza:#6B7280; --borda:#E5EBE9;
+    --vermelho:#DC2626; --amarelo:#F59E0B; --verde-ok:#16A34A;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background:var(--fundo); color:#1F2933; font-family:'Inter',Arial,sans-serif; }
+  h1,h2,h3,.titulo{ font-family:'Poppins',sans-serif; }
+
+  /* ===== TOASTS ===== */
+  #toastContainer{ position:fixed; top:20px; right:20px; z-index:300; display:flex; flex-direction:column; gap:10px; }
+  .toast{ display:flex; align-items:flex-start; gap:10px; background:#fff; border-radius:12px; padding:13px 16px;
+    box-shadow:0 10px 28px rgba(10,49,43,.2); border-left:4px solid var(--verde-claro); min-width:260px; max-width:380px;
+    animation:toastIn .3s ease; font-size:.85rem; line-height:1.45; }
+  .toast.saindo{ animation:toastOut .3s ease forwards; }
+  .toast.success{ border-left-color:#16A34A; }
+  .toast.error{ border-left-color:#DC2626; }
+  .toast.info{ border-left-color:var(--verde-agua); }
+  .toast .t-icon{ font-size:1.15rem; flex-shrink:0; margin-top:1px; }
+  @keyframes toastIn{ from{ transform:translateX(40px); opacity:0; } to{ transform:none; opacity:1; } }
+  @keyframes toastOut{ to{ transform:translateX(40px); opacity:0; } }
+
+  /* ===== LOGIN ===== */
+  #telaLogin{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; position:relative;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255,255,255,.07) 0, transparent 32%),
+      radial-gradient(circle at 88% 82%, rgba(42,161,152,.28) 0, transparent 42%),
+      linear-gradient(160deg, var(--verde-escuro) 0%, var(--verde-medio) 52%, var(--verde-claro) 100%); }
+  .card-login{ background:rgba(255,255,255,.98); border-radius:22px; padding:42px 38px; width:100%; max-width:420px;
+    box-shadow:0 24px 70px rgba(0,0,0,.45); animation:subir .55s ease; }
+  .logo-login{ display:block; margin:0 auto 18px; height:112px; filter:drop-shadow(0 6px 14px rgba(10,49,43,.28)); }
+  .card-login h1{ font-size:1.3rem; color:var(--verde-escuro); text-align:center; margin-bottom:4px; font-weight:700; }
+  .card-login p.sub{ font-size:.84rem; color:var(--cinza); text-align:center; margin-bottom:26px; }
+  .campo{ margin-bottom:15px; }
+  .campo label{ display:block; font-size:.78rem; font-weight:600; color:#374151; margin-bottom:5px; }
+  .campo input, .campo select, .campo textarea{ width:100%; padding:11px 13px; border:1.5px solid var(--borda); border-radius:10px; font-size:.9rem; font-family:'Inter',sans-serif; transition:border-color .15s, box-shadow .15s; background:#fff; }
+  .campo input:focus, .campo select:focus, .campo textarea:focus{ outline:none; border-color:var(--verde-claro); box-shadow:0 0 0 3px rgba(18,112,94,.15); }
+  .dica-senha{ font-size:.72rem; color:var(--cinza); margin-top:5px; }
+  .btn{ width:100%; padding:13px; border:none; border-radius:10px; font-size:.95rem; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; transition:transform .12s, box-shadow .12s; }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-primario{ background:linear-gradient(135deg,var(--verde-claro),var(--verde-suave)); color:#fff; box-shadow:0 6px 16px rgba(18,112,94,.3); }
+  .btn-primario:hover{ box-shadow:0 8px 20px rgba(18,112,94,.4); }
+  .btn-secundario{ background:#fff; color:var(--verde-claro); border:2px solid var(--verde-claro); }
+  .btn-secundario:hover{ background:#F0FDF9; }
+  .btn-vermelho{ background:var(--vermelho); color:#fff; }
+  .erro-login{ background:#FEF2F2; color:var(--vermelho); font-size:.8rem; padding:10px 13px; border-radius:10px; margin-bottom:14px; display:none; border:1px solid #FECACA; }
+  .acessos-demo{ margin-top:20px; background:#F0FDF9; border:1.5px dashed var(--verde-claro); border-radius:10px; padding:12px 14px; font-size:.72rem; color:var(--verde-medio); line-height:1.7; }
+  @keyframes subir{ from{ transform:translateY(20px); opacity:0; } to{ transform:none; opacity:1; } }
+
+  /* ===== APP ===== */
+  #app{ display:none; min-height:100vh; }
+  .topbar{ background:linear-gradient(90deg,var(--verde-escuro),var(--verde-medio)); color:#fff; display:flex; align-items:center; justify-content:space-between; padding:10px 22px; position:sticky; top:0; z-index:50; box-shadow:0 2px 12px rgba(10,49,43,.25); }
+  .topbar .esquerda{ display:flex; align-items:center; gap:12px; }
+  .topbar .logo-mini{ height:38px; }
+  .topbar .titulo{ font-size:1rem; font-weight:600; }
+  .topbar .usuario{ display:flex; align-items:center; gap:10px; font-size:.82rem; }
+  .badge-perfil{ padding:3px 10px; border-radius:20px; font-size:.68rem; font-weight:700; }
+  .badge-adm{ background:#7F1D1D; color:#fff; }
+  .badge-avaliador{ background:#92400E; color:#fff; }
+  .badge-atendente{ background:var(--verde-agua); color:#fff; }
+  .btn-sair{ background:transparent; border:1px solid rgba(255,255,255,.4); color:#fff; padding:5px 12px; border-radius:8px; cursor:pointer; font-size:.78rem; }
+  .btn-sair:hover{ background:rgba(255,255,255,.12); }
+
+  /* ===== GUIAS ===== */
+  .nav-guias{ background:var(--branco); border-bottom:1px solid var(--borda); padding:0 22px; display:flex; gap:4px; flex-wrap:wrap; }
+  .guia{ padding:14px 18px; background:none; border:none; border-bottom:3px solid transparent; font-size:.88rem; font-weight:600; color:var(--cinza); cursor:pointer; display:flex; align-items:center; gap:7px; font-family:'Poppins',sans-serif; transition:color .15s; }
+  .guia:hover{ color:var(--verde-claro); }
+  .guia.ativa{ color:var(--verde-escuro); border-bottom-color:var(--verde-claro); }
+  .badge-aviso{ background:var(--vermelho); color:#fff; border-radius:20px; font-size:.65rem; font-weight:700; padding:1px 7px; }
+  .conteudo{ max-width:1000px; margin:0 auto; padding:26px 22px 70px; }
+  .painel{ display:none; }
+  .painel.ativo{ display:block; animation:fade .3s ease; }
+  @keyframes fade{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+  /* ===== CARDS ===== */
+  .card{ background:var(--branco); border:1px solid var(--borda); border-radius:16px; padding:22px 24px; margin-bottom:18px; box-shadow:0 2px 10px rgba(10,49,43,.04); }
+  .card h2{ font-size:1rem; color:var(--verde-escuro); border-bottom:2px solid #E6F4F0; padding-bottom:10px; margin-bottom:18px; display:flex; align-items:center; gap:8px; font-weight:600; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  .grid4{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .aviso-help{ background:#F0FDF9; border-left:4px solid var(--verde-agua); padding:11px 14px; border-radius:8px; font-size:.8rem; color:var(--verde-medio); margin-bottom:18px; line-height:1.5; }
+
+  /* ===== QUESTÕES ===== */
+  .questao{ border:1px solid var(--borda); border-radius:12px; padding:14px 16px; margin-bottom:12px; background:#FCFEFD; transition:border-color .15s; }
+  .questao:hover{ border-color:#CBE8E0; }
+  .questao .q-top{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .questao .q-texto{ font-size:.88rem; font-weight:500; line-height:1.45; }
+  .nota{ font-size:1.2rem; font-weight:800; color:var(--verde-claro); min-width:42px; text-align:center; font-family:'Poppins',sans-serif; }
+  input[type=range].slider{ -webkit-appearance:none; appearance:none; width:100%; height:9px; border-radius:20px; margin-top:10px;
+    background:linear-gradient(to right, var(--verde-claro) var(--val,0%), #E5EBE9 var(--val,0%)); outline:none; cursor:pointer; }
+  input[type=range].slider::-webkit-slider-thumb{ -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:#fff; border:3.5px solid var(--verde-claro); box-shadow:0 2px 8px rgba(10,49,43,.3); cursor:pointer; }
+  input[type=range].slider::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:#fff; border:3.5px solid var(--verde-claro); box-shadow:0 2px 8px rgba(10,49,43,.3); cursor:pointer; }
+  .escala{ display:flex; justify-content:space-between; font-size:.68rem; color:var(--cinza); margin-top:4px; }
+  .peso-info{ font-size:.68rem; color:var(--cinza); background:#F3F6F5; display:inline-block; padding:2px 9px; border-radius:10px; margin-top:6px; }
+  .apontamento{ margin-top:10px; }
+  .apontamento label{ font-size:.72rem; font-weight:600; color:var(--cinza); }
+  .apontamento textarea{ width:100%; padding:9px 11px; border:1.5px solid var(--borda); border-radius:10px; font-size:.8rem; min-height:44px; resize:vertical; font-family:'Inter',sans-serif; }
+  .apontamento textarea:focus{ outline:none; border-color:var(--verde-claro); box-shadow:0 0 0 3px rgba(18,112,94,.12); }
+  .apontamento .obrigatorio{ color:var(--vermelho); font-weight:700; font-size:.68rem; }
+  .bloco-texto{ font-size:.8rem; background:#F7FAF9; padding:9px 11px; border-radius:8px; margin-top:5px; line-height:1.55; }
+
+  /* ===== RESULTADO ===== */
+  .resultado{ display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,#F0FDF9,#E6F6F2); border:1px solid #CBE8E0; border-radius:14px; padding:16px 18px; }
+  .resultado .total{ font-size:2.6rem; font-weight:800; color:var(--verde-escuro); font-family:'Poppins',sans-serif; }
+  .classificacao{ padding:7px 18px; border-radius:22px; color:#fff; font-weight:700; font-size:.9rem; font-family:'Poppins',sans-serif; }
+
+  /* ===== LISTAS ===== */
+  .item-lista{ border:1px solid var(--borda); border-radius:12px; padding:15px 17px; margin-bottom:11px; background:var(--branco); transition:box-shadow .15s, border-color .15s; }
+  .item-lista .linha1{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+  .item-lista .titulo-item{ font-weight:600; font-size:.9rem; font-family:'Poppins',sans-serif; }
+  .item-lista .meta{ font-size:.75rem; color:var(--cinza); margin-top:3px; }
+  .item-lista .acoes{ display:flex; gap:8px; margin-top:11px; flex-wrap:wrap; }
+  .btn-peq{ padding:7px 13px; border:none; border-radius:8px; font-size:.75rem; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; transition:filter .12s; }
+  .btn-peq:hover{ filter:brightness(1.08); }
+  .btn-ok{ background:var(--verde-claro); color:#fff; }
+  .btn-contestar{ background:var(--amarelo); color:#fff; }
+  .btn-adm{ background:#7F1D1D; color:#fff; }
+  .btn-editar{ background:#1D4ED8; color:#fff; }
+  .status{ font-size:.7rem; font-weight:700; padding:3px 11px; border-radius:20px; }
+  .status-pendente{ background:#FEF3C7; color:#92400E; }
+  .status-aceita{ background:#DCFCE7; color:var(--verde-ok); }
+  .status-contestada{ background:#FEE2E2; color:var(--vermelho); }
+  .status-contestacao-aceita{ background:#EDE9FE; color:#6D28D9; }
+  .clicavel{ cursor:pointer; transition:box-shadow .15s, transform .12s; }
+  .clicavel:hover{ box-shadow:0 6px 18px rgba(10,49,43,.1); transform:translateY(-1px); }
+  .dica-clique{ font-size:.72rem; color:var(--cinza); font-style:italic; margin-bottom:12px; }
+
+  /* ===== ESTADOS VAZIOS ===== */
+  .vazio-estado{ text-align:center; color:var(--cinza); padding:34px 16px; }
+  .vazio-estado .v-icone{ font-size:2.4rem; opacity:.7; margin-bottom:8px; }
+  .vazio-estado .v-titulo{ font-size:.9rem; font-weight:600; color:#4B5563; margin-bottom:4px; }
+  .vazio-estado .v-dica{ font-size:.78rem; color:var(--cinza); }
+
+  /* ===== BUSCA ===== */
+  .campo-busca{ position:relative; }
+  .campo-busca .icone{ position:absolute; left:13px; top:35px; color:var(--cinza); font-size:.85rem; }
+  .campo-busca input{ padding-left:38px; }
+
+  /* ===== MODAIS ===== */
+  .modal-overlay{ position:fixed; inset:0; background:rgba(10,49,43,.58); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; backdrop-filter:blur(3px); }
+  .modal-overlay.aberto{ display:flex; }
+  .modal-box{ background:#fff; border-radius:16px; max-width:780px; width:100%; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,.45); animation:subir .3s ease; }
+  .modal-header{ background:linear-gradient(135deg,var(--verde-escuro),var(--verde-medio)); color:#fff; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+  .modal-header h2{ font-size:1rem; font-weight:600; }
+  .btn-fechar{ background:rgba(255,255,255,.16); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:.95rem; font-weight:700; }
+  .btn-fechar:hover{ background:rgba(255,255,255,.32); }
+  .modal-body{ padding:20px 22px; overflow-y:auto; }
+  .modal-total{ background:#F0FDF9; border:1px solid #CBE8E0; border-radius:12px; padding:13px 17px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-weight:700; font-family:'Poppins',sans-serif; font-size:.9rem; }
+
+  /* ===== CONTESTAÇÃO ===== */
+  .contestar-item label.q-texto{ cursor:pointer; display:flex; gap:9px; align-items:flex-start; }
+  .contestar-item input[type=checkbox]{ width:auto; accent-color:var(--verde-claro); margin-top:3px; transform:scale(1.2); cursor:pointer; }
+  .justificativa{ background:#FEFCE8; border:1px solid #FDE68A; border-radius:10px; padding:11px; margin-top:10px; }
+
+  /* ===== TIMELINE ===== */
+  .timeline{ border-left:3px solid #CBE8E0; margin:12px 0 16px 6px; padding-left:18px; }
+  .timeline .evento{ position:relative; margin-bottom:13px; }
+  .timeline .evento::before{ content:''; position:absolute; left:-24px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--verde-claro); box-shadow:0 0 0 3px #E6F4F0; }
+  .timeline .evento .e-data{ font-size:.68rem; color:var(--cinza); }
+  .timeline .evento .e-titulo{ font-size:.82rem; font-weight:600; }
+  .timeline .evento .e-detalhe{ font-size:.76rem; color:#374151; background:#F7FAF9; padding:7px 11px; border-radius:8px; margin-top:5px; white-space:pre-line; }
+
+  /* ===== DASHBOARD ===== */
+  .kpi{ background:var(--branco); border:1px solid var(--borda); border-radius:14px; padding:18px; text-align:center; box-shadow:0 2px 10px rgba(10,49,43,.04); }
+  .kpi .k-valor{ font-size:2rem; font-weight:800; color:var(--verde-escuro); font-family:'Poppins',sans-serif; }
+  .kpi .k-label{ font-size:.75rem; color:var(--cinza); margin-top:3px; }
+  .kpi .k-tendencia{ font-size:.72rem; font-weight:700; margin-top:5px; }
+  .barra-container{ display:flex; align-items:flex-end; gap:8px; height:140px; margin-top:12px; }
+  .barra{ flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:4px; }
+  .barra .b{ width:100%; max-width:44px; background:linear-gradient(180deg,var(--verde-suave),var(--verde-claro)); border-radius:6px 6px 0 0; min-height:4px; transition:height .4s ease; }
+  .barra .b-lbl{ font-size:.62rem; color:var(--cinza); text-align:center; }
+  .barra .b-val{ font-size:.66rem; font-weight:700; color:var(--verde-escuro); }
+  .chip{ display:inline-block; padding:5px 13px; border-radius:22px; font-size:.75rem; font-weight:600; margin:3px 4px 3px 0; }
+  .filtro-dash{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:18px; }
+  .filtro-dash .campo{ margin-bottom:0; }
+
+  /* ===== COMUNICADOS ===== */
+  .comunicado{ border:1px solid var(--borda); border-radius:12px; padding:15px 17px; margin-bottom:11px; background:var(--branco); cursor:pointer; transition:box-shadow .15s; }
+  .comunicado:hover{ box-shadow:0 6px 18px rgba(10,49,43,.1); }
+  .comunicado.nao-lido{ border-left:4px solid var(--verde-claro); background:#F7FDFB; }
+  .comunicado .c-top{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .comunicado .c-titulo{ font-weight:600; font-size:.9rem; font-family:'Poppins',sans-serif; }
+  .comunicado .c-data{ font-size:.7rem; color:var(--cinza); }
+  .comunicado .c-msg{ font-size:.82rem; margin-top:7px; color:#374151; line-height:1.55; }
+  .comunicado .c-tipo{ font-size:.66rem; font-weight:700; padding:2px 9px; border-radius:10px; background:#E6F4F0; color:var(--verde-medio); display:inline-block; margin-top:6px; }
+  .comunicado .c-resumo{ font-size:.76rem; color:var(--cinza); font-style:italic; }
+  .comunicado .c-rodape{ display:flex; justify-content:space-between; align-items:center; margin-top:9px; flex-wrap:wrap; gap:8px; }
+  .nao-lido-flag{ background:var(--vermelho); color:#fff; font-size:.6rem; font-weight:700; padding:2px 8px; border-radius:10px; }
+
+  @media (max-width:760px){ .grid2,.grid3,.grid4{ grid-template-columns:1fr; } .nav-guias{ padding:0 10px; } .guia{ padding:12px 12px; font-size:.8rem; } }
+</style>
+</head>
+<body>
+
+<!-- TOASTS -->
+<div id="toastContainer"></div>
+
+<!-- ============ TELA DE LOGIN ============ -->
+<div id="telaLogin">
+  <div class="card-login">
+    <img src="logo.png" alt="Infinity Piercing" class="logo-login">
+    <h1>Monitoria de Qualidade</h1>
+    <p class="sub">Infinity Piercing — Atendimento via Salesmartly</p>
+    <div class="erro-login" id="erroLogin"></div>
+    <div class="campo">
+      <label>👤 Login (nome.sobrenome)</label>
+      <input type="text" id="loginInput" placeholder="ex: alexandre.silva" autocomplete="username">
+      <div class="dica-senha">Formato: nome.sobrenome, sem espaços.</div>
+    </div>
+    <div class="campo">
+      <label>🔒 Senha</label>
+      <input type="password" id="senhaInput" placeholder="ex: Amor@2026" autocomplete="current-password">
+      <div class="dica-senha">Use letras, números e símbolos (ex: Amor@2026).</div>
+    </div>
+    <button class="btn btn-primario" onclick="fazerLogin()">Entrar</button>
+    <div class="acessos-demo">
+      <strong>Contas de demonstração:</strong><br>
+      ADM: alexandre.silva / Amor@2026<br>
+      Avaliador: maria.avaliadora / Avalia@2026<br>
+      Atendente: joao.atendente / Atende@2026
+    </div>
+  </div>
+</div>
+
+<!-- ============ SISTEMA ============ -->
+<div id="app">
+  <div class="topbar">
+    <div class="esquerda">
+      <img src="logo.png" alt="Infinity" class="logo-mini">
+      <span class="titulo">Infinity Piercing — Monitoria</span>
+    </div>
+    <div class="usuario">
+      <span id="nomeUsuario"></span>
+      <span class="badge-perfil" id="badgePerfil"></span>
+      <button class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+  </div>
+
+  <div class="nav-guias">
+    <button class="guia ativa" data-painel="painelQualidade" onclick="trocarGuia(this)">🎯 Qualidade</button>
+    <button class="guia" data-painel="painelDashboard" onclick="trocarGuia(this)">📊 Dashboard</button>
+    <button class="guia" data-painel="painelProcessos" onclick="trocarGuia(this)">📋 Processos</button>
+    <button class="guia" data-painel="painelComunicados" onclick="trocarGuia(this)">📢 Comunicados <span class="badge-aviso" id="badgeComunicados" style="display:none">0</span></button>
+    <button class="guia" id="guiaGestao" data-painel="painelGestao" onclick="trocarGuia(this)" style="display:none">⚙️ Gestão</button>
+  </div>
+
+  <div class="conteudo">
+
+    <!-- ===== PAINEL QUALIDADE ===== -->
+    <div class="painel ativo" id="painelQualidade">
+      <div class="card">
+        <h2>📝 Nova avaliação de atendimento</h2>
+        <div class="aviso-help">💡 <strong>Antes de pontuar:</strong> abra a conversa no Salesmartly em outra aba e confira nas Informações Básicas o contato do cliente (número ou @). O contato é obrigatório para auditoria. A nota é ponderada por categoria e nunca ultrapassa 100 pontos.</div>
+        <div class="grid2">
+          <div class="campo">
+            <label>💬 Canal do contato *</label>
+            <select id="canalContato" onchange="atualizarCampoContato()">
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Instagram">Instagram</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label id="lblContato">📞 Número do cliente (WhatsApp) *</label>
+            <input type="text" id="contatoCliente" placeholder="Ex: (11) 95372-6817">
+            <div class="dica-senha" id="dicaContato">Use o número exibido nas Informações Básicas do contato no Salesmartly, com DDD.</div>
+          </div>
+          <div class="campo">
+            <label>👤 Nome do cliente</label>
+            <input type="text" id="nomeCliente" placeholder="Nome do cliente">
+          </div>
+          <div class="campo">
+            <label>📅 Data e hora do contato *</label>
+            <input type="datetime-local" id="dtContato">
+          </div>
+          <div class="campo">
+            <label>🧑‍💼 Avaliado (atendente) *</label>
+            <select id="avaliado"></select>
+            <div class="dica-senha">Lista suspensa com os atendentes cadastrados na aba Gestão.</div>
+          </div>
+          <div class="campo">
+            <label>🗓️ Data e hora da avaliação</label>
+            <input type="datetime-local" id="dtAvaliacao" readonly>
+          </div>
+          <div class="campo">
+            <label>🌎 Fuso horário da avaliação</label>
+            <select id="fusoSelect" onchange="mudarFuso()">
+              <option value="America/Sao_Paulo">Brasília (UTC-3)</option>
+              <option value="America/Noronha">Fernando de Noronha (UTC-2)</option>
+              <option value="America/Manaus">Manaus (UTC-4)</option>
+              <option value="America/Rio_Branco">Rio Branco (UTC-5)</option>
+            </select>
+            <div class="dica-senha">A data/hora da avaliação é preenchida automaticamente no fuso escolhido (padrão: horário de Brasília).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📋 Questões de avaliação (ponderação por categoria)</h2>
+        <div id="listaQuestoes"></div>
+        <div class="resultado" style="margin-top:18px;">
+          <div>
+            <div style="font-size:.78rem;color:var(--cinza);">Nota total</div>
+            <div class="total" id="totalNota">0</div>
+            <div style="font-size:.72rem;color:var(--cinza);">/ 100 pontos (ponderado)</div>
+          </div>
+          <span class="classificacao" id="classificacao" style="background:var(--cinza);">Aguardando</span>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:18px;">
+          <button class="btn btn-primario" style="flex:1;" onclick="enviarAvaliacao()">📤 Enviar avaliação</button>
+          <button class="btn btn-secundario" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📚 Avaliações registradas</h2>
+        <div class="dica-clique">💡 Clique em uma avaliação para abrir o formulário completo, o histórico e as ações.</div>
+        <div id="listaAvaliacoes"></div>
+      </div>
+    </div>
+
+    <!-- ===== PAINEL DASHBOARD ===== -->
+    <div class="painel" id="painelDashboard">
+      <div class="card">
+        <h2>📊 Dashboard de avaliações</h2>
+        <div class="filtro-dash">
+          <div class="campo">
+            <label>Período</label>
+            <select id="filtroDash" onchange="togglePeriodo()">
+              <option value="semana">Últimos 7 dias</option>
+              <option value="mes">Últimos 30 dias</option>
+              <option value="periodo">Período personalizado</option>
+            </select>
+          </div>
+          <div class="campo" id="campoInicio" style="display:none;">
+            <label>De</label>
+            <input type="date" id="dashInicio" onchange="renderDashboard()">
+          </div>
+          <div class="campo" id="campoFim" style="display:none;">
+            <label>Até</label>
+            <input type="date" id="dashFim" onchange="renderDashboard()">
+          </div>
+        </div>
+        <div class="grid4" id="kpis"></div>
+      </div>
+      <div class="card">
+        <h2>📈 Evolução da média (por semana)</h2>
+        <div id="evolucao"></div>
+      </div>
+      <div class="card">
+        <h2>🏷️ Distribuição por classificação</h2>
+        <div id="distribuicao"></div>
+      </div>
+      <div class="card">
+        <h2>⚖️ Média por categoria</h2>
+        <div id="porCategoria"></div>
+      </div>
+      <div class="card">
+        <h2>⚠️ Principais apontamentos</h2>
+        <div id="topApontamentos"></div>
+      </div>
+    </div>
+
+    <!-- ===== PAINEL PROCESSOS ===== -->
+    <div class="painel" id="painelProcessos">
+      <div class="card">
+        <h2>📚 Processos de atendimento</h2>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+          <button class="btn btn-primario" style="flex:0 0 auto; width:auto; padding:11px 18px;" onclick="abrirFormProcesso()">➕ Novo processo</button>
+          <div class="campo campo-busca" style="flex:1; min-width:220px; margin-bottom:0;">
+            <span class="icone" style="top:13px;">🔍</span>
+            <input type="text" id="buscaProcesso" placeholder="Buscar por título, categoria ou palavra-chave..." oninput="renderProcessos()">
+          </div>
+        </div>
+        <div class="dica-clique">💡 Clique em um processo para abrir a orientação completa. Editar abre popup e gera comunicado.</div>
+        <div id="listaProcessos"></div>
+      </div>
+    </div>
+
+    <!-- ===== PAINEL COMUNICADOS ===== -->
+    <div class="painel" id="painelComunicados">
+      <div class="card" id="cardNovoComunicado" style="display:none;">
+        <h2>📢 Novo comunicado</h2>
+        <div class="grid2">
+          <div class="campo">
+            <label>📌 Título *</label>
+            <input type="text" id="comTitulo" placeholder="Título do comunicado">
+          </div>
+          <div class="campo">
+            <label>👥 Destinatários *</label>
+            <select id="comDestino">
+              <option value="Todos">Todos os perfis</option>
+              <option value="ADM">Somente ADM</option>
+              <option value="Avaliador">Somente Avaliadores</option>
+              <option value="Atendente">Somente Atendentes</option>
+            </select>
+          </div>
+          <div class="campo" style="grid-column:1/-1;">
+            <label>📝 Mensagem *</label>
+            <textarea id="comMensagem" rows="3" placeholder="Escreva a mensagem..."></textarea>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primario" style="flex:1;" onclick="criarComunicado()">📤 Publicar</button>
+          <button class="btn btn-secundario" onclick="fecharNovoComunicado()">Cancelar</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>📥 Central de comunicados</h2>
+        <button class="btn btn-primario" id="btnNovoComunicado" style="width:auto; padding:11px 18px; margin-bottom:14px;" onclick="abrirNovoComunicado()">➕ Novo comunicado</button>
+        <div class="dica-clique">💡 Clique em um comunicado para abrir o conteúdo completo.</div>
+        <div id="listaComunicados"></div>
+      </div>
+    </div>
+
+    <!-- ===== PAINEL GESTÃO ===== -->
+    <div class="painel" id="painelGestao">
+      <div class="card">
+        <h2>🔌 Conexão com a planilha</h2>
+        <div class="campo">
+          <label>URL do Apps Script (Web App)</label>
+          <input type="url" id="scriptUrl" placeholder="https://script.google.com/macros/s/SEU_ID/exec">
+          <div class="dica-senha">A URL já vem configurada na versão final. Este campo permite trocar a planilha sem mexer no código.</div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <button class="btn btn-primario" style="width:auto; padding:11px 18px;" onclick="salvarConexao()">💾 Salvar conexão</button>
+          <span class="status status-pendente" id="statusConexao">Verificando...</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>👥 Usuários e perfis</h2>
+        <div id="listaUsuarios"></div>
+        <div class="grid3" style="margin-top:16px; align-items:end;">
+          <div class="campo">
+            <label>Login (nome.sobrenome)</label>
+            <input type="text" id="novoLogin" placeholder="ex: ana.souza">
+          </div>
+          <div class="campo">
+            <label>Senha</label>
+            <input type="text" id="novaSenha" placeholder="ex: Ana@2026">
+          </div>
+          <div class="campo">
+            <label>Perfil</label>
+            <select id="novoPerfil">
+              <option value="ADM">ADM</option>
+              <option value="Avaliador">Avaliador</option>
+              <option value="Atendente">Atendente</option>
+            </select>
+          </div>
+          <div class="campo" style="grid-column:1/-1;">
+            <button class="btn btn-primario" onclick="adicionarUsuario()">➕ Incluir usuário</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>❓ Questões do formulário</h2>
+        <div id="listaQuestoesGestao"></div>
+      </div>
+      <div class="card">
+        <h2>🧹 Dados de teste</h2>
+        <p style="font-size:.8rem;color:var(--cinza);margin-bottom:12px;">Em modo planilha, os dados ficam no Google Sheets — para limpar, edite a planilha diretamente.</p>
+        <button class="btn btn-vermelho" style="width:auto; padding:11px 18px;" onclick="limparDadosTeste()">🗑️ Limpar dados locais de teste</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: AVALIAÇÃO COMPLETA -->
+<div class="modal-overlay" id="modalAvaliacao" onclick="fecharModal(event,'modalAvaliacao')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>📄 Avaliação completa</h2>
+      <button class="btn-fechar" onclick="fecharModalBox('modalAvaliacao')">✕</button>
+    </div>
+    <div class="modal-body" id="modalAvaliacaoBody"></div>
+  </div>
+</div>
+
+<!-- MODAL: CONTESTAÇÃO -->
+<div class="modal-overlay" id="modalContestacao" onclick="fecharModal(event,'modalContestacao')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>⚠️ Contestar avaliação</h2>
+      <button class="btn-fechar" onclick="fecharModalBox('modalContestacao')">✕</button>
+    </div>
+    <div class="modal-body" id="modalContestacaoBody"></div>
+  </div>
+</div>
+
+<!-- MODAL: VISUALIZAR PROCESSO -->
+<div class="modal-overlay" id="modalProcesso" onclick="fecharModal(event,'modalProcesso')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>📋 Orientação completa do processo</h2>
+      <button class="btn-fechar" onclick="fecharModalBox('modalProcesso')">✕</button>
+    </div>
+    <div class="modal-body" id="modalProcessoBody"></div>
+  </div>
+</div>
+
+<!-- MODAL: NOVO / EDITAR PROCESSO -->
+<div class="modal-overlay" id="modalProcessoForm" onclick="fecharModal(event,'modalProcessoForm')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="tituloFormProcesso">➕ Novo processo</h2>
+      <button class="btn-fechar" onclick="fecharModalBox('modalProcessoForm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid2">
+        <div class="campo">
+          <label>📌 Título do processo *</label>
+          <input type="text" id="procTitulo" placeholder="ex: Atendimento inicial no WhatsApp">
+        </div>
+        <div class="campo">
+          <label>🏷️ Categoria *</label>
+          <select id="procCategoria">
+            <option value="Atendimento">Atendimento</option>
+            <option value="Follow-up">Follow-up</option>
+            <option value="Pós-venda">Pós-venda</option>
+            <option value="Registro">Registro / Cadastro</option>
+            <option value="Comercial">Comercial (pedido/frete)</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>🧑‍💼 Responsável</label>
+          <input type="text" id="procResponsavel" placeholder="Nome do responsável">
+        </div>
+        <div class="campo">
+          <label>📊 Status</label>
+          <select id="procStatus">
+            <option value="Em uso">Em uso</option>
+            <option value="Em revisão">Em revisão</option>
+            <option value="Arquivado">Arquivado</option>
+          </select>
+        </div>
+        <div class="campo" style="grid-column:1/-1;">
+          <label>📝 Descrição do processo *</label>
+          <textarea id="procDescricao" rows="3" placeholder="O que este processo cobre e para quem serve..."></textarea>
+        </div>
+        <div class="campo" style="grid-column:1/-1;">
+          <label>🔢 Etapas do processo (uma por linha) *</label>
+          <textarea id="procEtapas" rows="6" placeholder="1. Cumprimentar e se identificar&#10;2. Identificar se é estúdio/revendedor&#10;3. ..."></textarea>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:12px;">
+        <button class="btn btn-primario" style="flex:1;" onclick="salvarProcesso()">💾 Salvar</button>
+        <button class="btn btn-secundario" onclick="fecharModalBox('modalProcessoForm')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: COMUNICADO COMPLETO -->
+<div class="modal-overlay" id="modalComunicado" onclick="fecharModal(event,'modalComunicado')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>📢 Comunicado</h2>
+      <button class="btn-fechar" onclick="fecharModalBox('modalComunicado')">✕</button>
+    </div>
+    <div class="modal-body" id="modalComunicadoBody"></div>
+  </div>
+</div>
+
+<!-- MODAL: ENTRADA DE TEXTO -->
+<div class="modal-overlay" id="modalInput" onclick="fecharModal(event,'modalInput')">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <h2 id="modalInputTitulo">Entrada</h2>
+      <button class="btn-fechar" onclick="fecharModalBox('modalInput')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="modalInputMsg" style="font-size:.85rem;color:var(--cinza);margin-bottom:12px;"></p>
+      <textarea id="modalInputTexto" rows="3" style="width:100%;padding:11px 13px;border:1.5px solid var(--borda);border-radius:10px;font-size:.9rem;font-family:'Inter',sans-serif;resize:vertical;"></textarea>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button class="btn btn-primario" style="flex:1;" onclick="confirmarModalInput()">Confirmar</button>
+        <button class="btn btn-secundario" onclick="fecharModalBox('modalInput')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAÇÃO -->
+<div class="modal-overlay" id="modalConfirm" onclick="fecharModal(event,'modalConfirm')">
+  <div class="modal-box" style="max-width:460px;">
+    <div class="modal-header">
+      <h2>⚠️ Confirmação</h2>
+      <button class="btn-fechar" onclick="fecharModalBox('modalConfirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="modalConfirmMsg" style="font-size:.9rem;color:#374151;line-height:1.55;"></p>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn btn-primario" style="flex:1;" onclick="confirmarModalConfirm()">Sim, confirmar</button>
+        <button class="btn btn-secundario" onclick="fecharModalBox('modalConfirm')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   VERSÃO FINAL — URL DO APPS SCRIPT JÁ FIXADA
+   O time NÃO precisa configurar nada: o sistema já nasce
+   conectado à planilha do Google.
+========================================================= */
+console.log('Monitoria Infinity — versão final (planilha conectada)');
+
+/* =========================================================
+   CONFIGURAÇÃO — URL DO APPS SCRIPT (fixada)
+========================================================= */
+const URL_PADRAO_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxauSdEPa3xfMJPh_b0YbqbUeetRVKc9q_V9-gLOcCa86SoWY13vS6b3tAvkttZUXef/exec';
+let URL_APPS_SCRIPT = carregar('inf_script_url', URL_PADRAO_APPS_SCRIPT);
+
+function byId(id){ return document.getElementById(id); }
+
+function modoPlanilha(){
+  return typeof URL_APPS_SCRIPT === 'string' && URL_APPS_SCRIPT.trim().startsWith('https://');
+}
+
+/* =========================================================
+   BANCO (produção: Apps Script | fallback: navegador)
+========================================================= */
+const CHAVE_AVAL = 'inf_avaliacoes';
+const CHAVE_PROC = 'inf_processos';
+const CHAVE_USER = 'inf_usuarios';
+const CHAVE_COM  = 'inf_comunicados';
+
+const USUARIOS_DEMO = [
+  { login:'alexandre.silva', senha:'Amor@2026', perfil:'ADM', nome:'Alexandre' },
+  { login:'maria.avaliadora', senha:'Avalia@2026', perfil:'Avaliador', nome:'Maria' },
+  { login:'joao.atendente', senha:'Atende@2026', perfil:'Atendente', nome:'João' }
+];
+
+let usuarios = [];
+let sessao = null;
+let processoEditandoId = null;
+let fusoSelecionado = carregar('inf_fuso', 'America/Sao_Paulo');
+let cacheAvaliacoes = [];
+let cacheProcessos = [];
+let cacheComunicados = [];
+let modalInputCallback = null;
+let modalConfirmCallback = null;
+
+function carregar(chave, padrao){
+  try{ const d = localStorage.getItem(chave); return d ? JSON.parse(d) : padrao; }
+  catch(e){ return padrao; }
+}
+function salvar(chave, valor){ localStorage.setItem(chave, JSON.stringify(valor)); }
+function fmtData(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+}
+
+/* =========================================================
+   FUSO HORÁRIO — data/hora no fuso escolhido (padrão Brasília)
+========================================================= */
+function dataHoraNoFuso(tz){
+  tz = tz || 'America/Sao_Paulo';
+  try{
+    const partes = new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', hourCycle:'h23'
+    }).formatToParts(new Date());
+    const v = t => { const p = partes.find(x => x.type === t); return p ? p.value : '00'; };
+    return v('year') + '-' + v('month') + '-' + v('day') + 'T' + v('hour') + ':' + v('minute');
+  }catch(e){
+    const d = new Date();
+    const p = n => String(n).padStart(2,'0');
+    return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+}
+function rotuloFuso(tz){
+  const mapa = {
+    'America/Noronha':'Fernando de Noronha (UTC-2)',
+    'America/Sao_Paulo':'Brasília (UTC-3)',
+    'America/Manaus':'Manaus (UTC-4)',
+    'America/Rio_Branco':'Rio Branco (UTC-5)'
+  };
+  return mapa[tz] || tz;
+}
+function definirFusoSelect(){
+  const sel = byId('fusoSelect');
+  if(sel) sel.value = fusoSelecionado;
+}
+function mudarFuso(){
+  const sel = byId('fusoSelect');
+  if(!sel) return;
+  fusoSelecionado = sel.value;
+  salvar('inf_fuso', fusoSelecionado);
+  const campo = byId('dtAvaliacao');
+  if(campo) campo.value = dataHoraNoFuso(fusoSelecionado);
+  toastSucesso('Fuso atualizado: ' + rotuloFuso(fusoSelecionado));
+}
+
+/* =========================================================
+   API — conversa com o Apps Script
+========================================================= */
+async function api(acao, dados = {}){
+  if(!modoPlanilha()) return { ok:false, demo:true };
+  try{
+    const r = await fetch(URL_APPS_SCRIPT.trim(), { method:'POST', body: JSON.stringify({ acao, ...dados }) });
+    return await r.json();
+  }catch(e){
+    toastErro('Falha ao conectar com a planilha: ' + e.message);
+    return { ok:false, erro:String(e) };
+  }
+}
+
+/* =========================================================
+   CAMADA DE DADOS — avaliações
+========================================================= */
+async function obterAvaliacoes(){
+  let lista = [];
+  if(modoPlanilha()){
+    const r = await api('listarAvaliacoes');
+    if(r.ok) lista = r.avaliacoes || [];
+  } else {
+    lista = carregar(CHAVE_AVAL, []);
+  }
+  cacheAvaliacoes = Array.isArray(lista) ? lista : [];
+  return cacheAvaliacoes;
+}
+async function gravarAvaliacao(aval, atualizar){
+  if(modoPlanilha()){
+    await api(atualizar ? 'atualizarAvaliacao' : 'salvarAvaliacao', { avaliacao: aval });
+  } else {
+    const lista = carregar(CHAVE_AVAL, []);
+    const i = lista.findIndex(x => x.id === aval.id);
+    if(i >= 0) lista[i] = aval; else lista.unshift(aval);
+    salvar(CHAVE_AVAL, lista);
+  }
+}
+async function removerAvaliacao(id){
+  if(modoPlanilha()){ await api('excluirAvaliacao', { id }); }
+  else { salvar(CHAVE_AVAL, carregar(CHAVE_AVAL, []).filter(x => x.id !== id)); }
+}
+
+/* =========================================================
+   CAMADA DE DADOS — processos
+========================================================= */
+async function obterProcessos(){
+  let lista = [];
+  if(modoPlanilha()){
+    const r = await api('listarProcessos');
+    if(r.ok) lista = r.processos || [];
+  } else {
+    lista = carregar(CHAVE_PROC, []);
+  }
+  cacheProcessos = Array.isArray(lista) ? lista : [];
+  return cacheProcessos;
+}
+async function gravarProcesso(p){
+  if(modoPlanilha()){ await api('salvarProcesso', { processo: p }); }
+  else {
+    const lista = carregar(CHAVE_PROC, []);
+    const i = lista.findIndex(x => x.id === p.id);
+    if(i >= 0) lista[i] = p; else lista.unshift(p);
+    salvar(CHAVE_PROC, lista);
+  }
+}
+async function removerProcesso(id){
+  if(modoPlanilha()){ await api('excluirProcesso', { id }); }
+  else { salvar(CHAVE_PROC, carregar(CHAVE_PROC, []).filter(x => x.id !== id)); }
+}
+
+/* =========================================================
+   CAMADA DE DADOS — usuários
+========================================================= */
+async function obterUsuarios(){
+  if(modoPlanilha()){
+    const r = await api('listarUsuarios');
+    return r.ok ? (r.usuarios || []) : [];
+  }
+  return carregar(CHAVE_USER, USUARIOS_DEMO);
+}
+async function gravarUsuario(u){
+  if(modoPlanilha()){
+    const r = await api('salvarUsuario', { usuario: u });
+    if(!r.ok) throw new Error(r.erro || 'Erro ao incluir usuário');
+  } else {
+    const lista = carregar(CHAVE_USER, USUARIOS_DEMO);
+    lista.push(u);
+    salvar(CHAVE_USER, lista);
+  }
+}
+async function removerUsuario(login){
+  if(modoPlanilha()){ await api('excluirUsuario', { login }); }
+  else { salvar(CHAVE_USER, carregar(CHAVE_USER, USUARIOS_DEMO).filter(x => x.login !== login)); }
+}
+
+/* =========================================================
+   CAMADA DE DADOS — comunicados
+========================================================= */
+async function obterComunicados(){
+  let lista = [];
+  if(modoPlanilha()){
+    const r = await api('listarComunicados');
+    if(r.ok) lista = r.comunicados || [];
+  } else {
+    lista = carregar(CHAVE_COM, []);
+  }
+  cacheComunicados = Array.isArray(lista) ? lista : [];
+  return cacheComunicados;
+}
+async function gravarComunicado(c){
+  if(modoPlanilha()){ await api('salvarComunicado', { comunicado: c }); }
+  else { const lista = carregar(CHAVE_COM, []); lista.unshift(c); salvar(CHAVE_COM, lista); }
+}
+async function removerComunicado(id){
+  if(modoPlanilha()){ await api('excluirComunicado', { id }); }
+  else { salvar(CHAVE_COM, carregar(CHAVE_COM, []).filter(x => x.id !== id)); }
+}
+async function marcarLidoBackend(id){
+  if(modoPlanilha()){ await api('marcarLido', { id, login: sessao.login }); }
+  else {
+    const lista = carregar(CHAVE_COM, []);
+    const c = lista.find(x => x.id === id);
+    if(c && !c.lidoPor.includes(sessao.login)){ c.lidoPor.push(sessao.login); salvar(CHAVE_COM, lista); }
+  }
+}
+
+/* =========================================================
+   TOASTS
+========================================================= */
+function showToast(tipo, msg){
+  const icones = { success:'✅', error:'⚠️', info:'💡' };
+  const box = byId('toastContainer');
+  if(!box) return;
+  const el = document.createElement('div');
+  el.className = 'toast ' + tipo;
+  el.innerHTML = `<span class="t-icon">${icones[tipo] || '💡'}</span><span>${msg}</span>`;
+  box.appendChild(el);
+  setTimeout(() => { el.classList.add('saindo'); setTimeout(() => el.remove(), 320); }, 3600);
+}
+function toastSucesso(msg){ showToast('success', msg); }
+function toastErro(msg){ showToast('error', msg); }
+function toastInfo(msg){ showToast('info', msg); }
+
+/* =========================================================
+   MODAL DE ENTRADA (substitui o prompt())
+========================================================= */
+function modalPrompt(titulo, msg, placeholder, callback, obrigatorio){
+  const t = byId('modalInputTitulo'); if(t) t.textContent = titulo;
+  const m = byId('modalInputMsg'); if(m) m.textContent = msg;
+  const ta = byId('modalInputTexto');
+  if(ta){
+    ta.value = '';
+    ta.placeholder = placeholder || '';
+    ta.dataset.obrigatorio = obrigatorio ? '1' : '0';
+    modalInputCallback = callback;
+    abrirModalBox('modalInput');
+    setTimeout(() => ta.focus(), 100);
+  }
+}
+function confirmarModalInput(){
+  const ta = byId('modalInputTexto');
+  if(!ta) return;
+  const val = ta.value.trim();
+  const obrig = ta.dataset.obrigatorio === '1';
+  if(obrig && !val){ toastErro('Este campo é obrigatório.'); return; }
+  fecharModalBox('modalInput');
+  const cb = modalInputCallback; modalInputCallback = null;
+  if(cb) cb(val);
+}
+
+/* =========================================================
+   MODAL DE CONFIRMAÇÃO (substitui o confirm())
+========================================================= */
+function modalConfirm(msg, callback){
+  const m = byId('modalConfirmMsg'); if(m) m.textContent = msg;
+  modalConfirmCallback = callback;
+  abrirModalBox('modalConfirm');
+}
+function confirmarModalConfirm(){
+  fecharModalBox('modalConfirm');
+  const cb = modalConfirmCallback; modalConfirmCallback = null;
+  if(cb) cb(true);
+}
+
+/* =========================================================
+   ESTADOS VAZIOS
+========================================================= */
+function vazioHTML(icone, titulo, dica){
+  return `<div class="vazio-estado"><div class="v-icone">${icone}</div><div class="v-titulo">${titulo}</div><div class="v-dica">${dica}</div></div>`;
+}
+
+/* =========================================================
+   CATEGORIAS E QUESTÕES (ponderação 100 pts)
+========================================================= */
+const CATEGORIAS = [
+  { nome:'🟢 Condução', peso:20, cor:'#12705E' },
+  { nome:'🔵 Processo', peso:30, cor:'#1D4ED8' },
+  { nome:'🟠 Procedimentos e Processos', peso:25, cor:'#D97706' },
+  { nome:'🟣 Registro de contato (Salesmartly)', peso:25, cor:'#7C3AED' }
+];
+
+const QUESTOES_PADRAO = [
+  { cat:0, texto:'O atendente cumprimentou e se identificou de forma cordial e profissional?' },
+  { cat:0, texto:'Demonstrou empatia e acolhimento com o revendedor/estúdio?' },
+  { cat:0, texto:'Manteve linguagem clara, objetiva e adequada ao perfil do cliente?' },
+  { cat:1, texto:'Identificou corretamente a necessidade (tipo de produto, material, quantidade)?' },
+  { cat:1, texto:'Orientou corretamente sobre pedido mínimo, frete e prazos de envio?' },
+  { cat:1, texto:'Aplicou a qualificação comercial correta (estúdio/revendedor vs. varejo)?' },
+  { cat:1, texto:'Conduziu o atendimento de forma organizada e sequencial até a conclusão?' },
+  { cat:2, texto:'Seguiu o procedimento padrão da Infinity (catálogo, laudos técnicos, formas de pagamento)?' },
+  { cat:2, texto:'Esclareceu dúvidas sobre materiais, garantia, devoluções e pós-venda?' },
+  { cat:2, texto:'Seguiu o processo de follow-up e retorno ao cliente no prazo padrão?' },
+  { cat:2, texto:'Aplicou o processo de pós-venda (acompanhamento do pedido e da entrega)?' },
+  { cat:3, texto:'Abriu e identificou corretamente o contato na plataforma (cliente certo, canal certo)?' },
+  { cat:3, texto:'Registrou o resumo do atendimento com informações completas e organizadas?' },
+  { cat:3, texto:'Utilizou os recursos de registro da plataforma (etiquetas, status, anotações) corretamente?' },
+  { cat:3, texto:'Atualizou o status e os próximos passos ao final do contato, deixando o histórico pronto para follow-up?' }
+];
+
+let questoes = QUESTOES_PADRAO.slice();
+
+function garantirQuestoes(){
+  if(!questoes || !Array.isArray(questoes) || questoes.length === 0){
+    questoes = QUESTOES_PADRAO.slice();
+  }
+}
+
+function valorMaxQuestao(idx){
+  const cat = questoes[idx].cat;
+  const qtd = questoes.filter(q => q.cat === cat).length;
+  return CATEGORIAS[cat].peso / qtd;
+}
+function valorMaxDe(r){
+  if(r.valorMax != null) return r.valorMax;
+  const i = questoes.findIndex(q => q.texto === r.questao);
+  return i >= 0 ? Math.round(valorMaxQuestao(i) * 100) / 100 : 0;
+}
+
+/* =========================================================
+   CAMPO CONTATO DINÂMICO (número WhatsApp OU @Instagram)
+========================================================= */
+function atualizarCampoContato(){
+  const canalEl = byId('canalContato');
+  const canal = canalEl ? canalEl.value : 'WhatsApp';
+  const lbl = byId('lblContato');
+  const input = byId('contatoCliente');
+  const dica = byId('dicaContato');
+  if(canal === 'Instagram'){
+    if(lbl) lbl.textContent = '📸 @Instagram ou link do perfil *';
+    if(input) input.placeholder = 'Ex: @infinitypiercing.atacado ou https://instagram.com/...';
+    if(dica) dica.textContent = 'Use o @ ou o link do perfil do cliente, conforme as Informações Básicas no Salesmartly.';
+  } else {
+    if(lbl) lbl.textContent = '📞 Número do cliente (WhatsApp) *';
+    if(input) input.placeholder = 'Ex: (11) 95372-6817';
+    if(dica) dica.textContent = 'Use o número exibido nas Informações Básicas do contato no Salesmartly, com DDD.';
+  }
+}
+
+/* =========================================================
+   CONEXÃO COM A PLANILHA (aba Gestão)
+========================================================= */
+function atualizarStatusConexao(){
+  const st = byId('statusConexao');
+  if(!st) return;
+  if(modoPlanilha()){
+    st.textContent = '✅ Conectado à planilha';
+    st.className = 'status status-aceita';
+  } else {
+    st.textContent = 'Modo demonstração (navegador)';
+    st.className = 'status status-pendente';
+  }
+  const inp = byId('scriptUrl');
+  if(inp) inp.value = URL_APPS_SCRIPT;
+}
+function salvarConexao(){
+  const url = byId('scriptUrl').value.trim();
+  if(!url){ toastErro('Cole a URL do Apps Script.'); return; }
+  URL_APPS_SCRIPT = url;
+  salvar('inf_script_url', url);
+  atualizarStatusConexao();
+  toastSucesso('Conexão salva! O sistema agora grava na planilha.');
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+async function autenticar(login, senha){
+  if(modoPlanilha()){
+    const r = await api('login', { login, senha });
+    return r.ok ? r.usuario : null;
+  }
+  const lista = carregar(CHAVE_USER, USUARIOS_DEMO);
+  const u = lista.find(x => String(x.login).toLowerCase() === login.toLowerCase() && x.senha === senha);
+  return u ? { login: u.login, perfil: u.perfil, nome: u.nome } : null;
+}
+
+async function fazerLogin(){
+  const loginEl = byId('loginInput');
+  const senhaEl = byId('senhaInput');
+  const erro = byId('erroLogin');
+  if(!loginEl || !senhaEl) return;
+  const login = loginEl.value.trim().toLowerCase();
+  const senha = senhaEl.value;
+  if(!/^[a-záéíóúâêôãõç]+\.+[a-záéíóúâêôãõç]+$/i.test(login)){
+    if(erro){ erro.textContent = 'Login inválido. Use o formato nome.sobrenome (ex: alexandre.silva).'; erro.style.display = 'block'; }
+    return;
+  }
+  const senhaForte = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+  if(!senhaForte.test(senha)){
+    if(erro){ erro.textContent = 'Senha fraca. Use letras, números e símbolos (ex: Amor@2026).'; erro.style.display = 'block'; }
+    return;
+  }
+  const user = await autenticar(login, senha);
+  if(!user){
+    if(erro){ erro.textContent = 'Usuário ou senha incorretos.'; erro.style.display = 'block'; }
+    return;
+  }
+  sessao = user;
+  if(erro) erro.style.display = 'none';
+  await entrarSistema();
+}
+
+async function entrarSistema(){
+  try{ const t = byId('telaLogin'); if(t) t.style.display = 'none'; }catch(e){ console.error(e); }
+  try{ const a = byId('app'); if(a) a.style.display = 'block'; }catch(e){ console.error(e); }
+  try{ const n = byId('nomeUsuario'); if(n) n.textContent = sessao.nome; }catch(e){ console.error(e); }
+  try{
+    const badge = byId('badgePerfil');
+    if(badge){
+      badge.textContent = sessao.perfil;
+      badge.className = 'badge-perfil ' + (sessao.perfil === 'ADM' ? 'badge-adm' : sessao.perfil === 'Avaliador' ? 'badge-avaliador' : 'badge-atendente');
+    }
+  }catch(e){ console.error(e); }
+  try{ const g = byId('guiaGestao'); if(g) g.style.display = sessao.perfil === 'ADM' ? 'inline-block' : 'none'; }catch(e){ console.error(e); }
+  try{ const b = byId('btnNovoComunicado'); if(b) b.style.display = sessao.perfil === 'ADM' ? 'inline-block' : 'none'; }catch(e){ console.error(e); }
+  try{ const dt = byId('dtAvaliacao'); if(dt) dt.value = dataHoraNoFuso(fusoSelecionado); }catch(e){ console.error(e); }
+  try{ definirFusoSelect(); }catch(e){ console.error(e); }
+
+  try{ usuarios = await obterUsuarios(); }catch(e){ usuarios = USUARIOS_DEMO.slice(); console.error(e); }
+  try{ renderAvaliados(); }catch(e){ console.error(e); }
+  try{ atualizarCampoContato(); }catch(e){ console.error(e); }
+  try{ renderQuestoes(); }catch(e){ console.error(e); }
+  try{ await renderAvaliacoes(); }catch(e){ console.error(e); }
+  try{ await renderProcessos(); }catch(e){ console.error(e); }
+  try{ await renderComunicados(); }catch(e){ console.error(e); }
+  try{ renderUsuarios(); }catch(e){ console.error(e); }
+  try{ renderQuestoesGestao(); }catch(e){ console.error(e); }
+  try{ await atualizarBadgeComunicados(); }catch(e){ console.error(e); }
+  try{ atualizarStatusConexao(); }catch(e){ console.error(e); }
+  try{ calcularTotal(); }catch(e){ console.error(e); }
+
+  if(!modoPlanilha()) toastInfo('Modo demonstração: dados salvos no navegador.');
+  else toastSucesso('Bem-vindo(a), ' + sessao.nome + '! Conexão com a planilha ativa.');
+}
+
+function sair(){
+  sessao = null;
+  const t = byId('telaLogin'); if(t) t.style.display = 'flex';
+  const a = byId('app'); if(a) a.style.display = 'none';
+  const s = byId('senhaInput'); if(s) s.value = '';
+  const l = byId('loginInput'); if(l) l.value = '';
+}
+
+function trocarGuia(el){
+  document.querySelectorAll('.guia').forEach(g => g.classList.remove('ativa'));
+  el.classList.add('ativa');
+  document.querySelectorAll('.painel').forEach(p => p.classList.remove('ativo'));
+  const painel = byId(el.dataset.painel);
+  if(painel) painel.classList.add('ativo');
+  if(el.dataset.painel === 'painelDashboard') renderDashboard();
+  if(el.dataset.painel === 'painelComunicados'){ renderComunicados(); atualizarBadgeComunicados(); }
+}
+
+/* =========================================================
+   LISTA SUSPENSA DE ATENDENTES
+========================================================= */
+function renderAvaliados(){
+  const sel = byId('avaliado');
+  if(!sel) return;
+  const atendentes = (usuarios || []).filter(u => u.perfil === 'Atendente');
+  let html = atendentes.length
+    ? '<option value="">Selecione o atendente...</option>'
+    : '<option value="">Nenhum atendente cadastrado (aba Gestão)</option>';
+  atendentes.forEach(u => { html += `<option value="${u.nome}">${u.nome}</option>`; });
+  sel.innerHTML = html;
+}
+
+/* =========================================================
+   QUESTÕES (formulário) — RENDERIZAÇÃO PROTEGIDA
+========================================================= */
+function renderQuestoes(){
+  const wrapper = byId('listaQuestoes');
+  if(!wrapper) return;
+  garantirQuestoes();
+  try{
+    let html = '';
+    let ultimaCat = -1;
+    questoes.forEach((q, i) => {
+      if(q.cat !== ultimaCat){
+        if(ultimaCat !== -1) html += '</div>';
+        html += `<div style="margin-top:16px;"><h3 style="font-size:.86rem;color:${CATEGORIAS[q.cat].cor};margin-bottom:4px;font-family:'Poppins',sans-serif;">${CATEGORIAS[q.cat].nome}</h3>
+          <div style="font-size:.7rem;color:var(--cinza);margin-bottom:11px;">Peso da categoria: <strong>${CATEGORIAS[q.cat].peso} pontos</strong> de 100</div>`;
+        ultimaCat = q.cat;
+      }
+      const vm = valorMaxQuestao(i);
+      html += `
+        <div class="questao">
+          <div class="q-top">
+            <div class="q-texto">${i+1}. ${q.texto}</div>
+            <div class="nota" id="nota${i}">0</div>
+          </div>
+          <input type="range" class="slider" min="0" max="10" step="1" value="0" id="q${i}" oninput="atualizarNota(${i})">
+          <div class="escala"><span>0 — Não atendeu</span><span>10 — Atendeu plenamente</span></div>
+          <span class="peso-info">⚖️ Vale até ${vm.toFixed(2).replace('.',',')} pts nesta nota</span>
+          <div class="apontamento">
+            <label>✏️ Apontamento <span class="obrigatorio">(obrigatório se a nota for menor que 7)</span></label>
+            <textarea id="apont${i}" placeholder="O que precisa melhorar / observação..."></textarea>
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+    wrapper.innerHTML = html;
+    questoes.forEach((_, i) => sliderPreenche(byId('q'+i)));
+  }catch(e){
+    console.error('Erro ao renderizar questões:', e);
+    wrapper.innerHTML = vazioHTML('⚠️', 'Não foi possível carregar as questões',
+      'Erro: ' + String(e && e.message || e) + '. Recarregue a página (Ctrl+F5).');
+  }
+}
+
+function sliderPreenche(el){
+  if(!el) return;
+  const min = Number(el.min) || 0, max = Number(el.max) || 10;
+  const pct = ((Number(el.value) - min) / (max - min)) * 100;
+  el.style.setProperty('--val', pct + '%');
+}
+
+function atualizarNota(i){
+  const n = byId('nota'+i); if(n) n.textContent = byId('q'+i).value;
+  sliderPreenche(byId('q'+i));
+  calcularTotal();
+}
+
+function calcularTotal(){
+  garantirQuestoes();
+  let total = 0;
+  questoes.forEach((q, i) => {
+    const el = byId('q'+i);
+    total += el ? (Number(el.value) / 10) * valorMaxQuestao(i) : 0;
+  });
+  total = Math.round(total * 10) / 10;
+  const t = byId('totalNota'); if(t) t.textContent = total;
+  const c = byId('classificacao');
+  if(!c) return;
+  if(total >= 90){ c.textContent = 'Excelente'; c.style.background = '#16A34A'; }
+  else if(total >= 75){ c.textContent = 'Bom'; c.style.background = '#22C55E'; }
+  else if(total >= 60){ c.textContent = 'Regular'; c.style.background = '#F59E0B'; }
+  else { c.textContent = 'Crítico'; c.style.background = '#DC2626'; }
+}
+
+/* =========================================================
+   ENVIO DA AVALIAÇÃO
+========================================================= */
+async function enviarAvaliacao(){
+  if(sessao.perfil === 'Atendente'){ toastErro('O atendente não pontua avaliações.'); return; }
+  const contato = byId('contatoCliente').value.trim();
+  const avaliado = byId('avaliado').value;
+  const dtContato = byId('dtContato').value;
+  if(!contato){ toastErro('Informe o contato do cliente (número ou @Instagram).'); return; }
+  if(!avaliado){ toastErro('Selecione o atendente avaliado na lista suspensa.'); return; }
+  if(!dtContato){ toastErro('Informe a data e hora do contato.'); return; }
+
+  const faltantes = [];
+  questoes.forEach((q, i) => {
+    const nota = Number(byId('q'+i).value);
+    const apont = byId('apont'+i).value.trim();
+    if(nota < 7 && !apont) faltantes.push(i+1);
+  });
+  if(faltantes.length){
+    toastErro('Preencha o apontamento das questões com nota menor que 7: ' + faltantes.join(', '));
+    return;
+  }
+
+  const aval = {
+    id: Date.now(),
+    contato,
+    canal: byId('canalContato').value,
+    cliente: byId('nomeCliente').value.trim(),
+    avaliado,
+    dtContato, dtAvaliacao: byId('dtAvaliacao').value,
+    fuso: fusoSelecionado,
+    avaliador: sessao.nome,
+    total: Number(byId('totalNota').textContent),
+    classificacao: byId('classificacao').textContent,
+    respostas: questoes.map((q,i)=>({
+      questao: q.texto,
+      categoria: CATEGORIAS[q.cat].nome,
+      nota: Number(byId('q'+i).value),
+      valorMax: Math.round(valorMaxQuestao(i) * 100) / 100,
+      apontamento: byId('apont'+i).value.trim()
+    })),
+    status: 'Pendente',
+    historico: [{ data: new Date().toISOString(), por: sessao.nome, acao: 'enviada', detalhe: 'Avaliação enviada' }]
+  };
+  await gravarAvaliacao(aval, false);
+  limparFormulario();
+  await renderAvaliacoes();
+  toastSucesso('Avaliação enviada! O atendente poderá aceitar ou contestar.');
+}
+
+function limparFormulario(){
+  const c = byId('contatoCliente'); if(c) c.value = '';
+  const n = byId('nomeCliente'); if(n) n.value = '';
+  const a = byId('avaliado'); if(a) a.value = '';
+  const d = byId('dtContato'); if(d) d.value = '';
+  const da = byId('dtAvaliacao'); if(da) da.value = dataHoraNoFuso(fusoSelecionado);
+  questoes.forEach((_, i) => {
+    const el = byId('q'+i); if(el){ el.value = 0; sliderPreenche(el); }
+    const ap = byId('apont'+i); if(ap) ap.value = '';
+  });
+  calcularTotal();
+}
+
+/* =========================================================
+   LISTA DE AVALIAÇÕES — filtrada por perfil
+========================================================= */
+function avaliacoesVisiveis(){
+  const avals = cacheAvaliacoes;
+  if(!sessao) return [];
+  if(sessao.perfil === 'Atendente') return avals.filter(a => (a.avaliado || '').toLowerCase() === sessao.nome.toLowerCase());
+  if(sessao.perfil === 'Avaliador') return avals.filter(a => a.avaliador === sessao.nome);
+  return avals;
+}
+
+async function renderAvaliacoes(){
+  await obterAvaliacoes();
+  const avals = avaliacoesVisiveis();
+  const div = byId('listaAvaliacoes');
+  if(!div) return;
+  if(!avals.length){
+    div.innerHTML = sessao.perfil === 'Atendente'
+      ? vazioHTML('📭', 'Você ainda não possui avaliações', 'Quando o avaliador registrar uma avaliação sua, ela aparecerá aqui para você aceitar ou contestar.')
+      : vazioHTML('📭', 'Nenhuma avaliação registrada', 'Preencha o formulário acima e clique em "Enviar avaliação" para começar.');
+    return;
+  }
+  div.innerHTML = avals.map(a => {
+    const apontamentos = (a.respostas || []).filter(r => r.nota < 7).map(r => `• ${r.questao}: ${r.apontamento}`).join('<br>') || '—';
+    const stClass = statusClass(a.status);
+    const contatoInfo = a.contato
+      ? ' | Contato: ' + a.contato
+      : (a.link ? ' | <a href="' + a.link + '" target="_blank" onclick="event.stopPropagation();">Ver conversa no Salesmartly</a>' : '');
+
+    let acoes = '';
+    if(sessao.perfil === 'Atendente' && (a.avaliado || '').toLowerCase() === sessao.nome.toLowerCase() && a.status === 'Pendente'){
+      acoes += `<button class="btn-peq btn-ok" onclick="event.stopPropagation();aceitarAvaliacao(${a.id})">✅ Aceitar</button>
+                <button class="btn-peq btn-contestar" onclick="event.stopPropagation();contestarAvaliacao(${a.id})">⚠️ Contestar</button>`;
+    }
+    const podeExcluir = sessao.perfil === 'ADM' || (sessao.perfil === 'Avaliador' && a.avaliador === sessao.nome);
+    if(podeExcluir){
+      acoes += `<button class="btn-peq btn-vermelho" onclick="event.stopPropagation();excluirAvaliacao(${a.id})">🗑️ Excluir</button>`;
+    }
+
+    let contestacaoResumo = '';
+    if(a.contestacao && a.contestacao.length){
+      contestacaoResumo = `<div style="font-size:.78rem;margin-top:7px;color:var(--vermelho);">⚠️ <strong>Contestação:</strong> ${a.contestacao.length} questão(ões) — ${a.contestacao.map(c => c.questao).join('; ')}</div>`;
+    } else if(a.motivoContestacao){
+      contestacaoResumo = `<div style="font-size:.78rem;margin-top:7px;color:var(--vermelho);">⚠️ <strong>Contestação:</strong> ${a.motivoContestacao}</div>`;
+    }
+
+    return `
+      <div class="item-lista clicavel" onclick="abrirAvaliacao(${a.id})">
+        <div class="linha1">
+          <div>
+            <div class="titulo-item">${a.avaliado} — ${a.total}/100 (${a.classificacao})</div>
+            <div class="meta">Avaliador: ${a.avaliador} | Canal: ${a.canal} | Contato: ${(a.dtContato||'').replace('T',' ')}</div>
+            <div class="meta">Cliente: ${a.cliente || '—'}${contatoInfo}</div>
+          </div>
+          <span class="status ${stClass}">${statusLabel(a.status)}</span>
+        </div>
+        <div style="font-size:.78rem;color:var(--cinza);margin-top:9px;"><strong>Apontamentos (nota < 7):</strong><br>${apontamentos}</div>
+        ${contestacaoResumo}
+        ${acoes ? `<div class="acoes">${acoes}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function statusLabel(s){
+  if(s === 'Pendente') return 'Pendente';
+  if(s === 'Aceita') return 'Aceita';
+  if(s === 'Contestada') return 'Contestada';
+  if(s === 'ContestacaoAceita') return 'Contestação aceita';
+  return s;
+}
+function statusClass(s){
+  if(s === 'Pendente') return 'status-pendente';
+  if(s === 'Aceita') return 'status-aceita';
+  if(s === 'Contestada') return 'status-contestada';
+  return 'status-contestacao-aceita';
+}
+
+/* ===== MODAL DA AVALIAÇÃO ===== */
+function abrirAvaliacao(id){
+  const a = cacheAvaliacoes.find(x => x.id === id);
+  if(!a) return;
+  let html = `
+    <div class="modal-total">
+      <span>🎯 ${a.avaliado}</span>
+      <span><strong>${a.total}/100</strong> — ${a.classificacao}</span>
+      <span class="status ${statusClass(a.status)}">${statusLabel(a.status)}</span>
+    </div>
+    <div class="grid2" style="margin-bottom:13px;">
+      <div class="meta">📞 Contato: ${a.contato || a.link || '—'}</div>
+      <div class="meta">💬 Canal: ${a.canal}</div>
+      <div class="meta">👤 Cliente: ${a.cliente || '—'}</div>
+      <div class="meta">🕒 Contato em: ${(a.dtContato||'').replace('T',' ')}</div>
+      <div class="meta">🧑‍💼 Avaliador: ${a.avaliador}</div>
+      <div class="meta">🗓️ Avaliação: ${(a.dtAvaliacao||'').replace('T',' ')} ${a.fuso ? '(' + rotuloFuso(a.fuso) + ')' : ''}</div>
+    </div>
+    <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:12px 0 7px;font-family:'Poppins',sans-serif;">📋 Questões e apontamentos</h3>`;
+  (a.respostas || []).forEach((r, i) => {
+    const vm = valorMaxDe(r);
+    html += `
+      <div class="questao">
+        <div class="q-top">
+          <div class="q-texto">${i+1}. ${r.questao}</div>
+          <div class="nota">${r.nota}/10</div>
+        </div>
+        <span class="peso-info">⚖️ Vale até ${vm.toFixed(2).replace('.',',')} pts</span>
+        <div class="apontamento">
+          <label>✏️ Apontamento:</label>
+          <div class="bloco-texto">${r.apontamento || '—'}</div>
+        </div>
+      </div>`;
+  });
+
+  if(a.contestacao && a.contestacao.length){
+    html += `<h3 style="font-size:.86rem;color:var(--vermelho);margin:15px 0 7px;font-family:'Poppins',sans-serif;">⚠️ Contestações do atendente</h3>`;
+    a.contestacao.forEach(c => {
+      html += `
+        <div class="questao" style="border-color:#FECACA;background:#FFF7F7;">
+          <div class="q-top">
+            <div class="q-texto">${c.questao}</div>
+            <div class="nota">${c.nota}/10</div>
+          </div>
+          <div class="apontamento">
+            <label>✏️ Apontamento do avaliador:</label>
+            <div class="bloco-texto">${c.apontamento || '—'}</div>
+          </div>
+          <div class="apontamento">
+            <label>✍️ Justificativa do atendente:</label>
+            <div class="bloco-texto" style="background:#FEF3C7;">${c.justificativa}</div>
+          </div>
+        </div>`;
+    });
+  }
+
+  html += `<h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 7px;font-family:'Poppins',sans-serif;">🕓 Histórico</h3><div class="timeline">`;
+  (a.historico || []).slice().reverse().forEach(h => {
+    html += `<div class="evento">
+      <div class="e-data">${fmtData(h.data)} — ${h.por}</div>
+      <div class="e-titulo">${acaoLabel(h.acao)}</div>
+      ${h.detalhe ? `<div class="e-detalhe">${h.detalhe}</div>` : ''}
+    </div>`;
+  });
+  html += `</div>`;
+
+  const ehAtendenteEnvolvido = sessao.perfil === 'Atendente' && (a.avaliado || '').toLowerCase() === sessao.nome.toLowerCase();
+  const ehAdm = sessao.perfil === 'ADM';
+  const podeExcluir = ehAdm || (sessao.perfil === 'Avaliador' && a.avaliador === sessao.nome);
+
+  html += `<div class="acoes" style="margin-top:16px;">`;
+  if(ehAtendenteEnvolvido && a.status === 'Pendente'){
+    html += `<button class="btn-peq btn-ok" onclick="aceitarAvaliacao(${a.id})">✅ Aceitar</button>
+             <button class="btn-peq btn-contestar" onclick="contestarAvaliacao(${a.id})">⚠️ Contestar</button>`;
+  }
+  if(ehAdm && a.status === 'Contestada'){
+    html += `<button class="btn-peq btn-adm" onclick="decidirContestacao(${a.id}, true)">✅ Aceitar contestação</button>
+             <button class="btn-peq btn-ok" onclick="decidirContestacao(${a.id}, false)">↩️ Manter avaliação</button>`;
+  }
+  if(podeExcluir){
+    html += `<button class="btn-peq btn-vermelho" onclick="excluirAvaliacao(${a.id})">🗑️ Excluir</button>`;
+  }
+  html += `</div>`;
+  const body = byId('modalAvaliacaoBody');
+  if(body){ body.innerHTML = html; abrirModalBox('modalAvaliacao'); }
+}
+
+function acaoLabel(a){
+  if(a === 'enviada') return '📤 Avaliação enviada';
+  if(a === 'aceita') return '✅ Aceita pelo atendente';
+  if(a === 'contestada') return '⚠️ Contestada pelo atendente';
+  if(a === 'contestacao_aceita') return '🟣 Contestação aceita pelo ADM';
+  if(a === 'contestacao_rejeitada') return '↩️ Contestação rejeitada — avaliação mantida';
+  return a;
+}
+
+/* ===== AÇÕES DO FLUXO ===== */
+function aceitarAvaliacao(id){
+  modalPrompt('✅ Aceitar avaliação', 'Quer registrar um feedback sobre esta avaliação? (opcional)', 'Escreva seu feedback aqui...', async (feedback) => {
+    const aval = cacheAvaliacoes.find(x => x.id === id);
+    if(!aval) return;
+    aval.status = 'Aceita';
+    aval.feedbackAtendente = feedback || '';
+    aval.historico = aval.historico || [];
+    aval.historico.push({ data: new Date().toISOString(), por: sessao.nome, acao: 'aceita', detalhe: feedback ? 'Feedback: ' + feedback : 'Sem feedback' });
+    await gravarAvaliacao(aval, true);
+    await renderAvaliacoes();
+    abrirAvaliacao(id);
+    toastSucesso('Avaliação aceita!');
+  });
+}
+
+function contestarAvaliacao(id){
+  const a = cacheAvaliacoes.find(x => x.id === id);
+  if(!a) return;
+  const comApontamento = (a.respostas || []).map((r, idx) => ({ r, idx })).filter(x => x.r.apontamento && x.r.apontamento.trim() !== '');
+  let html = `
+    <div class="modal-total">
+      <span>🎯 ${a.avaliado}</span>
+      <span><strong>${a.total}/100</strong> — ${a.classificacao}</span>
+      <span class="status ${statusClass(a.status)}">${statusLabel(a.status)}</span>
+    </div>
+    <div class="grid2" style="margin-bottom:13px;">
+      <div class="meta">📞 Contato: ${a.contato || a.link || '—'}</div>
+      <div class="meta">💬 Canal: ${a.canal}</div>
+      <div class="meta">👤 Cliente: ${a.cliente || '—'}</div>
+      <div class="meta">🕒 Contato em: ${(a.dtContato||'').replace('T',' ')}</div>
+      <div class="meta">🧑‍💼 Avaliador: ${a.avaliador}</div>
+      <div class="meta">🗓️ Avaliação: ${(a.dtAvaliacao||'').replace('T',' ')} ${a.fuso ? '(' + rotuloFuso(a.fuso) + ')' : ''}</div>
+    </div>
+    <div class="aviso-help">⚠️ <strong>Selecione as questões com as quais você discorda</strong> e justifique os pontos de cada uma. Só é possível contestar questões que possuem apontamento.</div>
+    <h3 style="font-size:.86rem;color:var(--vermelho);margin:11px 0 7px;font-family:'Poppins',sans-serif;">Questões contestáveis (${comApontamento.length})</h3>`;
+  if(!comApontamento.length){
+    html += `<div class="vazio-estado"><div class="v-icone">🎉</div><div class="v-titulo">Esta avaliação não possui apontamentos</div><div class="v-dica">Sem apontamentos, não há o que contestar.</div></div>
+      <button class="btn btn-primario" onclick="fecharModalBox('modalContestacao')">Fechar</button>`;
+  } else {
+    html += comApontamento.map(({ r, idx }) => {
+      const vm = valorMaxDe(r);
+      return `
+      <div class="questao contestar-item" id="ci${idx}">
+        <div class="q-top">
+          <label class="q-texto">
+            <input type="checkbox" class="chk-contestar" data-idx="${idx}" onchange="toggleJustificativa(${idx})">
+            <span>${idx+1}. ${r.questao}</span>
+          </label>
+          <div class="nota">${r.nota}/10</div>
+        </div>
+        <span class="peso-info">⚖️ Vale até ${vm.toFixed(2).replace('.',',')} pts</span>
+        <div class="apontamento">
+          <label>✏️ Apontamento do avaliador:</label>
+          <div class="bloco-texto">${r.apontamento}</div>
+        </div>
+        <div class="apontamento justificativa" id="just${idx}" style="display:none;">
+          <label>✍️ Sua justificativa (por que discorda dos pontos?) *</label>
+          <textarea id="justificativa${idx}" placeholder="Explique por que você discorda da nota desta questão..."></textarea>
+        </div>
+      </div>`;
+    }).join('');
+    html += `
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button class="btn btn-primario" style="flex:1;" onclick="confirmarContestacao(${a.id})">📤 Enviar contestação</button>
+        <button class="btn btn-secundario" onclick="fecharModalBox('modalContestacao')">Cancelar</button>
+      </div>`;
+  }
+  const body = byId('modalContestacaoBody');
+  if(body){ body.innerHTML = html; abrirModalBox('modalContestacao'); }
+}
+
+function toggleJustificativa(idx){
+  const chk = document.querySelector('.chk-contestar[data-idx="' + idx + '"]');
+  const just = byId('just' + idx);
+  if(chk && just){
+    just.style.display = chk.checked ? 'block' : 'none';
+    if(!chk.checked){ const ta = byId('justificativa' + idx); if(ta) ta.value = ''; }
+  }
+}
+
+async function confirmarContestacao(id){
+  const aval = cacheAvaliacoes.find(x => x.id === id);
+  if(!aval) return;
+  const selecionadas = [];
+  let invalida = false;
+  document.querySelectorAll('#modalContestacao .chk-contestar:checked').forEach(chk => {
+    if(invalida) return;
+    const idx = Number(chk.dataset.idx);
+    const just = byId('justificativa' + idx).value.trim();
+    if(!just){
+      toastErro('Preencha a justificativa da questão ' + (idx + 1) + '.');
+      const j = byId('justificativa' + idx); if(j) j.focus();
+      invalida = true; return;
+    }
+    const r = aval.respostas[idx];
+    selecionadas.push({ questao: r.questao, nota: r.nota, apontamento: r.apontamento, justificativa: just });
+  });
+  if(invalida) return;
+  if(!selecionadas.length){ toastErro('Selecione ao menos uma questão para contestar.'); return; }
+
+  aval.status = 'Contestada';
+  aval.contestacao = selecionadas;
+  aval.motivoContestacao = selecionadas.map(s => s.questao).join('; ');
+  aval.historico = aval.historico || [];
+  aval.historico.push({
+    data: new Date().toISOString(),
+    por: sessao.nome,
+    acao: 'contestada',
+    detalhe: selecionadas.map(s => s.questao + ' → ' + s.justificativa).join('\n')
+  });
+  await gravarAvaliacao(aval, true);
+
+  await gerarComunicado(
+    '⚠️ Avaliação contestada',
+    `${sessao.nome} contestou a avaliação do atendente ${aval.avaliado} (${aval.total}/100). Questões contestadas: ${aval.motivoContestacao}`,
+    destinatariosDe(['ADM'], [aval.avaliador]),
+    'avaliacao', aval.id
+  );
+  fecharModalBox('modalContestacao');
+  await renderAvaliacoes();
+  abrirAvaliacao(id);
+  await atualizarBadgeComunicados();
+  toastSucesso('Contestação enviada! ADM e avaliador serão notificados.');
+}
+
+async function decidirContestacao(id, aceitar){
+  const aval = cacheAvaliacoes.find(x => x.id === id);
+  if(!aval) return;
+  aval.historico = aval.historico || [];
+  if(aceitar){
+    aval.status = 'ContestacaoAceita';
+    aval.historico.push({ data: new Date().toISOString(), por: sessao.nome, acao: 'contestacao_aceita', detalhe: 'ADM aceitou a contestação do atendente' });
+  } else {
+    aval.status = 'Aceita';
+    aval.historico.push({ data: new Date().toISOString(), por: sessao.nome, acao: 'contestacao_rejeitada', detalhe: 'ADM manteve a avaliação original' });
+  }
+  await gravarAvaliacao(aval, true);
+  await gerarComunicado(
+    aceitar ? '🟣 Contestação aceita' : '↩️ Avaliação mantida',
+    `${sessao.nome} ${aceitar ? 'aceitou a contestação de' : 'manteve a avaliação de'} ${aval.avaliado} (${aval.total}/100).`,
+    destinatariosDe(['ADM'], [aval.avaliador, (aval.avaliado || '').toLowerCase()]),
+    'avaliacao', aval.id
+  );
+  await renderAvaliacoes();
+  abrirAvaliacao(id);
+  await atualizarBadgeComunicados();
+  toastSucesso(aceitar ? 'Contestação aceita!' : 'Avaliação mantida.');
+}
+
+function excluirAvaliacao(id){
+  const aval = cacheAvaliacoes.find(x => x.id === id);
+  if(!aval) return;
+  const podeExcluir = sessao.perfil === 'ADM' || (sessao.perfil === 'Avaliador' && aval.avaliador === sessao.nome);
+  if(!podeExcluir){ toastErro('Somente ADM pode excluir avaliações de outros.'); return; }
+  modalConfirm('Excluir esta avaliação? Essa ação não pode ser desfeita.', async () => {
+    await removerAvaliacao(id);
+    fecharModalBox('modalAvaliacao');
+    await renderAvaliacoes();
+    toastSucesso('Avaliação excluída.');
+  });
+}
+
+/* =========================================================
+   PROCESSOS
+========================================================= */
+function abrirFormProcesso(id){
+  if(sessao.perfil === 'Atendente'){ toastErro('O atendente pode consultar os processos, mas não cadastrar ou editar.'); return; }
+  processoEditandoId = id || null;
+  const t = byId('tituloFormProcesso'); if(t) t.textContent = id ? '✏️ Editar processo' : '➕ Novo processo';
+  const p = id ? cacheProcessos.find(x => x.id === id) : null;
+  const pTit = byId('procTitulo'); if(pTit) pTit.value = p ? p.titulo : '';
+  const pCat = byId('procCategoria'); if(pCat) pCat.value = p ? p.categoria : 'Atendimento';
+  const pSt = byId('procStatus'); if(pSt) pSt.value = p ? p.status : 'Em uso';
+  const pResp = byId('procResponsavel'); if(pResp) pResp.value = p ? p.responsavel : sessao.nome;
+  const pDesc = byId('procDescricao'); if(pDesc) pDesc.value = p ? p.descricao : '';
+  const pEtap = byId('procEtapas'); if(pEtap) pEtap.value = p ? p.etapas : '';
+  abrirModalBox('modalProcessoForm');
+}
+
+async function salvarProcesso(){
+  const titulo = byId('procTitulo').value.trim();
+  const descricao = byId('procDescricao').value.trim();
+  const etapas = byId('procEtapas').value.trim();
+  if(!titulo || !descricao || !etapas){ toastErro('Preencha título, descrição e etapas do processo.'); return; }
+  const editando = processoEditandoId;
+  let p = null;
+  if(editando){
+    p = cacheProcessos.find(x => x.id === editando);
+    if(p){
+      p.titulo = titulo;
+      p.categoria = byId('procCategoria').value;
+      p.status = byId('procStatus').value;
+      p.responsavel = byId('procResponsavel').value.trim() || sessao.nome;
+      p.descricao = descricao;
+      p.etapas = etapas;
+      p.editadoPor = sessao.nome;
+      p.editadoEm = new Date().toISOString();
+      p.historicoEdicoes = p.historicoEdicoes || [];
+      p.historicoEdicoes.push({ quando: new Date().toISOString(), por: sessao.nome, resumo: 'Processo atualizado' });
+    }
+  } else {
+    p = {
+      id: Date.now(), titulo,
+      categoria: byId('procCategoria').value,
+      status: byId('procStatus').value,
+      responsavel: byId('procResponsavel').value.trim() || sessao.nome,
+      descricao, etapas,
+      criadoPor: sessao.nome, criadoEm: new Date().toISOString(),
+      historicoEdicoes: []
+    };
+  }
+  if(!p) return;
+  await gravarProcesso(p);
+  fecharModalBox('modalProcessoForm');
+  await renderProcessos();
+  const msg = editando
+    ? `O processo "${titulo}" foi atualizado por ${sessao.nome}. Confira a nova orientação na guia Processos.`
+    : `Um novo processo foi registrado por ${sessao.nome}: "${titulo}". Confira na guia Processos.`;
+  await gerarComunicado(editando ? '✏️ Processo atualizado' : '➕ Novo processo registrado', msg, todosLogins(), 'processo');
+  await atualizarBadgeComunicados();
+  toastSucesso(editando ? 'Processo atualizado! Comunicado enviado a todos.' : 'Processo registrado! Comunicado enviado a todos.');
+  processoEditandoId = null;
+}
+
+async function renderProcessos(){
+  await obterProcessos();
+  const busca = (byId('buscaProcesso')?.value || '').trim().toLowerCase();
+  let procs = cacheProcessos;
+  if(busca){
+    procs = procs.filter(p => (p.titulo + ' ' + p.categoria + ' ' + p.descricao + ' ' + p.etapas + ' ' + p.status + ' ' + p.responsavel).toLowerCase().includes(busca));
+  }
+  const div = byId('listaProcessos');
+  if(!div) return;
+  if(!procs.length){
+    div.innerHTML = busca
+      ? vazioHTML('🔍', 'Nenhum processo encontrado', 'Tente outro termo de busca.')
+      : vazioHTML('📋', 'Nenhum processo cadastrado', 'Clique em "Novo processo" para documentar a orientação do atendimento.');
+    return;
+  }
+  div.innerHTML = procs.map(p => {
+    const podeEditar = sessao.perfil !== 'Atendente';
+    return `
+    <div class="item-lista clicavel" onclick="abrirProcesso(${p.id})">
+      <div class="linha1">
+        <div>
+          <div class="titulo-item">${p.titulo} <span style="font-weight:400;color:var(--cinza);font-size:.8rem;">— ${p.categoria}</span></div>
+          <div class="meta">Status: ${p.status} | Responsável: ${p.responsavel}${p.editadoEm ? ' | Última edição: ' + fmtData(p.editadoEm) : ''}</div>
+        </div>
+        ${podeEditar ? `
+        <div class="acoes">
+          <button class="btn-peq btn-editar" onclick="event.stopPropagation();abrirFormProcesso(${p.id})">✏️ Editar</button>
+          <button class="btn-peq btn-vermelho" onclick="event.stopPropagation();excluirProcesso(${p.id})">🗑️ Excluir</button>
+        </div>` : ''}
+      </div>
+      <div style="font-size:.8rem;margin-top:9px;color:#374151;">${p.descricao}</div>
+    </div>`;
+  }).join('');
+}
+
+function abrirProcesso(id){
+  const p = cacheProcessos.find(x => x.id === id);
+  if(!p) return;
+  let edicoes = '';
+  if(p.historicoEdicoes && p.historicoEdicoes.length){
+    edicoes = `<h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 8px;font-family:'Poppins',sans-serif;">🕓 Histórico de edições</h3><div class="timeline">` +
+      p.historicoEdicoes.slice().reverse().map(h =>
+        `<div class="evento"><div class="e-data">${fmtData(h.quando)} — ${h.por}</div><div class="e-titulo">${h.resumo}</div></div>`
+      ).join('') + `</div>`;
+  }
+  const html = `
+    <div class="modal-total">
+      <span>📌 ${p.titulo}</span>
+      <span class="status status-aceita">${p.status}</span>
+    </div>
+    <div class="grid2" style="margin-bottom:13px;">
+      <div class="meta">🏷️ Categoria: ${p.categoria}</div>
+      <div class="meta">🧑‍💼 Responsável: ${p.responsavel}</div>
+      <div class="meta">👤 Criado por: ${p.criadoPor} em ${fmtData(p.criadoEm)}</div>
+      <div class="meta">✏️ Última edição: ${p.editadoPor ? p.editadoPor + ' em ' + fmtData(p.editadoEm) : '—'}</div>
+    </div>
+    <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:11px 0;">📝 Descrição</h3>
+    <div style="font-size:.85rem;background:#F7FAF9;padding:13px;border-radius:10px;line-height:1.55;">${p.descricao}</div>
+    <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 8px;font-family:'Poppins',sans-serif;">🔢 Etapas / orientação completa</h3>
+    <div style="font-size:.85rem;background:#F0FDF9;border:1px solid #CBE8E0;padding:15px;border-radius:10px;line-height:1.7;white-space:pre-line;">${p.etapas}</div>
+    ${edicoes}`;
+  const body = byId('modalProcessoBody');
+  if(body){ body.innerHTML = html; abrirModalBox('modalProcesso'); }
+}
+
+function excluirProcesso(id){
+  modalConfirm('Excluir este processo?', async () => {
+    await removerProcesso(id);
+    await renderProcessos();
+    toastSucesso('Processo excluído.');
+  });
+}
+
+/* =========================================================
+   COMUNICADOS
+========================================================= */
+function todosLogins(){ return (usuarios || []).map(u => u.login); }
+function destinatariosDe(perfis, logins){
+  const set = new Set(logins || []);
+  (perfis || []).forEach(p => (usuarios || []).forEach(u => { if(u.perfil === p) set.add(u.login); }));
+  return [...set];
+}
+async function gerarComunicado(titulo, mensagem, destinatarios, tipo, refId){
+  const c = { id: Date.now(), titulo, mensagem, data: new Date().toISOString(), tipo, refId, destinatarios, lidoPor: [] };
+  await gravarComunicado(c);
+}
+async function atualizarBadgeComunicados(){
+  const lista = cacheComunicados.length ? cacheComunicados : await obterComunicados();
+  const visiveis = lista.filter(c => (c.destinatarios || []).includes(sessao.login));
+  const n = visiveis.filter(c => !(c.lidoPor || []).includes(sessao.login)).length;
+  const badge = byId('badgeComunicados');
+  if(!badge) return;
+  if(n > 0){ badge.style.display = 'inline-block'; badge.textContent = n; }
+  else badge.style.display = 'none';
+}
+function abrirNovoComunicado(){
+  if(sessao.perfil !== 'ADM'){ toastErro('Somente ADM pode criar comunicados.'); return; }
+  const card = byId('cardNovoComunicado'); if(card) card.style.display = 'block';
+  const btn = byId('btnNovoComunicado'); if(btn) btn.style.display = 'none';
+}
+function fecharNovoComunicado(){
+  const card = byId('cardNovoComunicado'); if(card) card.style.display = 'none';
+  const btn = byId('btnNovoComunicado'); if(btn) btn.style.display = 'inline-block';
+}
+async function criarComunicado(){
+  const titulo = byId('comTitulo').value.trim();
+  const mensagem = byId('comMensagem').value.trim();
+  if(!titulo || !mensagem){ toastErro('Preencha título e mensagem.'); return; }
+  const destino = byId('comDestino').value;
+  let destinos = todosLogins();
+  if(destino !== 'Todos') destinos = destinatariosDe([destino], []);
+  await gerarComunicado(titulo, mensagem, destinos, 'geral');
+  const ct = byId('comTitulo'); if(ct) ct.value = '';
+  const cm = byId('comMensagem'); if(cm) cm.value = '';
+  fecharNovoComunicado();
+  await renderComunicados();
+  await atualizarBadgeComunicados();
+  toastSucesso('Comunicado publicado!');
+}
+
+async function renderComunicados(){
+  await obterComunicados();
+  const coms = cacheComunicados.filter(c => (c.destinatarios || []).includes(sessao.login));
+  const div = byId('listaComunicados');
+  if(!div) return;
+  if(!coms.length){
+    div.innerHTML = vazioHTML('📢', 'Nenhum comunicado', 'Os avisos e notificações do sistema aparecerão aqui.');
+    return;
+  }
+  div.innerHTML = coms.map(c => {
+    const naoLido = !(c.lidoPor || []).includes(sessao.login);
+    const podeExcluir = sessao.perfil === 'ADM';
+    return `
+    <div class="comunicado ${naoLido ? 'nao-lido' : ''}" onclick="abrirComunicado(${c.id})">
+      <div class="c-top">
+        <span class="c-titulo">${c.titulo} ${naoLido ? '<span class="nao-lido-flag">NOVO</span>' : ''}</span>
+        <span class="c-data">${fmtData(c.data)}</span>
+      </div>
+      <span class="c-tipo">${c.tipo === 'avaliacao' ? 'Avaliação' : c.tipo === 'processo' ? 'Processo' : 'Geral'}</span>
+      <div class="c-msg">${c.mensagem.length > 160 ? c.mensagem.slice(0,160) + '…' : c.mensagem}</div>
+      <div class="c-rodape">
+        <span class="c-resumo">🔍 Clique para abrir o comunicado completo</span>
+        ${podeExcluir ? `<button class="btn-peq btn-vermelho" onclick="event.stopPropagation();excluirComunicado(${c.id})">🗑️ Excluir</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function abrirComunicado(id){
+  const c = cacheComunicados.find(x => x.id === id);
+  if(!c) return;
+  await marcarLidoBackend(id);
+  await renderComunicados();
+  await atualizarBadgeComunicados();
+
+  const qtdDest = (c.destinatarios || []).length;
+  let html = `
+    <div class="modal-total">
+      <span>📢 ${c.titulo}</span>
+      <span class="status status-aceita">${c.tipo === 'avaliacao' ? 'Avaliação' : c.tipo === 'processo' ? 'Processo' : 'Geral'}</span>
+    </div>
+    <div class="grid2" style="margin-bottom:13px;">
+      <div class="meta">📅 Publicado em: ${fmtData(c.data)}</div>
+      <div class="meta">👥 Destinatários: ${qtdDest} usuário(s)</div>
+    </div>
+    <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:11px 0;font-family:'Poppins',sans-serif;">📝 Mensagem</h3>
+    <div style="font-size:.88rem;background:#F7FAF9;padding:15px;border-radius:10px;line-height:1.6;white-space:pre-line;">${c.mensagem}</div>`;
+
+  if(sessao.perfil === 'ADM'){
+    html += `<div class="acoes" style="margin-top:16px;">
+      <button class="btn-peq btn-vermelho" onclick="excluirComunicado(${c.id})">🗑️ Excluir comunicado</button>
+    </div>`;
+  }
+  const body = byId('modalComunicadoBody');
+  if(body){ body.innerHTML = html; abrirModalBox('modalComunicado'); }
+}
+
+function excluirComunicado(id){
+  if(sessao.perfil !== 'ADM'){ toastErro('Somente ADM pode excluir comunicados.'); return; }
+  modalConfirm('Excluir este comunicado?', async () => {
+    await removerComunicado(id);
+    fecharModalBox('modalComunicado');
+    await renderComunicados();
+    await atualizarBadgeComunicados();
+    toastSucesso('Comunicado excluído.');
+  });
+}
+
+async function marcarComunicadoLido(id){
+  await marcarLidoBackend(id);
+  await renderComunicados();
+  await atualizarBadgeComunicados();
+}
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+function togglePeriodo(){
+  const f = byId('filtroDash').value;
+  const ci = byId('campoInicio'); if(ci) ci.style.display = f === 'periodo' ? 'block' : 'none';
+  const cf = byId('campoFim'); if(cf) cf.style.display = f === 'periodo' ? 'block' : 'none';
+  renderDashboard();
+}
+function obterPeriodo(){
+  const f = byId('filtroDash').value;
+  const agora = new Date();
+  let inicio, fim = new Date(agora);
+  if(f === 'semana'){ inicio = subDias(agora, 7); }
+  else if(f === 'mes'){ inicio = subDias(agora, 30); }
+  else {
+    const i = byId('dashInicio') ? byId('dashInicio').value : '';
+    const j = byId('dashFim') ? byId('dashFim').value : '';
+    inicio = i ? new Date(i) : subDias(agora, 30);
+    fim = j ? new Date(j) : agora;
+  }
+  return { inicio, fim };
+}
+function subDias(d, n){ const x = new Date(d); x.setDate(x.getDate() - n); return x; }
+
+async function renderDashboard(){
+  await obterAvaliacoes();
+  const { inicio, fim } = obterPeriodo();
+  const iniStr = inicio.toISOString().slice(0,10);
+  const fimStr = fim.toISOString().slice(0,10);
+  let avals = avaliacoesVisiveis().filter(a => {
+    const d = (a.dtAvaliacao || '').slice(0,10);
+    return d >= iniStr && d <= fimStr;
+  });
+
+  const media = avals.length ? avals.reduce((s,a) => s + a.total, 0) / avals.length : 0;
+  const nAceitas = avals.filter(a => a.status === 'Aceita' || a.status === 'ContestacaoAceita').length;
+  const taxaAceite = avals.length ? Math.round((nAceitas / avals.length) * 100) : 0;
+
+  const duracao = Math.max(1, Math.round((fim - inicio) / 86400000));
+  const prevFim = subDias(inicio, 1);
+  const prevIni = subDias(prevFim, duracao);
+  const prevAvals = avaliacoesVisiveis().filter(a => {
+    const d = (a.dtAvaliacao || '').slice(0,10);
+    return d >= prevIni.toISOString().slice(0,10) && d <= prevFim.toISOString().slice(0,10);
+  });
+  const mediaPrev = prevAvals.length ? prevAvals.reduce((s,a) => s + a.total, 0) / prevAvals.length : 0;
+  const diff = mediaPrev > 0 ? Math.round(((media - mediaPrev) / mediaPrev) * 100) : (media > 0 ? 100 : 0);
+
+  const kpis = byId('kpis');
+  if(kpis) kpis.innerHTML = `
+    <div class="kpi"><div class="k-valor">${avals.length}</div><div class="k-label">Avaliações no período</div></div>
+    <div class="kpi"><div class="k-valor">${media.toFixed(1)}</div><div class="k-label">Média geral /100</div>
+      <div class="k-tendencia" style="color:${diff >= 0 ? '#16A34A' : '#DC2626'};">${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff)}% vs. período anterior</div></div>
+    <div class="kpi"><div class="k-valor">${taxaAceite}%</div><div class="k-label">Aceite dos atendentes</div></div>
+    <div class="kpi"><div class="k-valor">${avals.filter(a => a.status === 'Contestada').length}</div><div class="k-label">Contestações pendentes</div></div>`;
+
+  const semanas = [];
+  const hojeSemana = inicioSemana(new Date());
+  for(let i = 7; i >= 0; i--){
+    const s = new Date(hojeSemana); s.setDate(s.getDate() - i * 7);
+    semanas.push(s);
+  }
+  const evol = semanas.map(s => {
+    const sStr = s.toISOString().slice(0,10);
+    const eStr = subDias(new Date(s), -7).toISOString().slice(0,10);
+    const lista = avals.filter(a => { const d = (a.dtAvaliacao || '').slice(0,10); return d >= sStr && d < eStr; });
+    const m = lista.length ? lista.reduce((x,y) => x + y.total, 0) / lista.length : 0;
+    return { rotulo: s.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'}), m };
+  });
+  const maxEv = Math.max(10, ...evol.map(e => e.m));
+  const evolEl = byId('evolucao');
+  if(evolEl) evolEl.innerHTML = avals.length
+    ? `<div class="barra-container">` + evol.map(e =>
+        `<div class="barra"><div class="b-val">${e.m > 0 ? e.m.toFixed(0) : '—'}</div><div class="b" style="height:${Math.max(4, Math.round((e.m / maxEv) * 120))}px;"></div><div class="b-lbl">${e.rotulo}</div></div>`
+      ).join('') + `</div>`
+    : vazioHTML('📈', 'Sem dados para evolução', 'Registre avaliações para ver a evolução semanal.');
+
+  const dist = { Excelente:0, Bom:0, Regular:0, Crítico:0 };
+  avals.forEach(a => { dist[a.classificacao] = (dist[a.classificacao] || 0) + 1; });
+  const cores = { Excelente:'#16A34A', Bom:'#22C55E', Regular:'#F59E0B', Crítico:'#DC2626' };
+  const distEl = byId('distribuicao');
+  if(distEl) distEl.innerHTML = avals.length
+    ? Object.keys(dist).map(k => `<span class="chip" style="background:${cores[k]};color:#fff;">${k}: ${dist[k]} (${Math.round((dist[k]/avals.length)*100)}%)</span>`).join(' ')
+    : vazioHTML('🏷️', 'Sem avaliações no período', 'A distribuição por classificação aparecerá aqui.');
+
+  const catRes = CATEGORIAS.map((c, ci) => {
+    let somaPts = 0, maxPts = 0;
+    avals.forEach(a => {
+      (a.respostas || []).forEach(r => {
+        const i = questoes.findIndex(q => q.texto === r.questao);
+        if(i >= 0 && questoes[i].cat === ci){ somaPts += (r.nota / 10) * valorMaxDe(r); }
+      });
+      maxPts += c.peso;
+    });
+    const pct = maxPts ? Math.round((somaPts / maxPts) * 100) : 0;
+    return `<div style="margin-bottom:11px;"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:5px;"><span>${c.nome}</span><strong>${pct}%</strong></div>
+      <div style="background:#F0F4F3;border-radius:8px;height:11px;"><div style="width:${pct}%;height:11px;background:${c.cor};border-radius:8px;transition:width .4s;"></div></div></div>`;
+  }).join('');
+  const catEl = byId('porCategoria');
+  if(catEl) catEl.innerHTML = avals.length ? catRes : vazioHTML('⚖️', 'Sem avaliações no período', 'A média por categoria aparecerá aqui.');
+
+  const top = {};
+  avals.forEach(a => (a.respostas || []).forEach(r => {
+    if(r.nota < 7 && r.apontamento){
+      if(!top[r.questao]) top[r.questao] = { count:0, exemplo:r.apontamento };
+      top[r.questao].count++;
+    }
+  }));
+  const topArr = Object.keys(top).map(k => ({ texto:k, ...top[k] })).sort((a,b) => b.count - a.count).slice(0,5);
+  const topEl = byId('topApontamentos');
+  if(topEl) topEl.innerHTML = avals.length
+    ? (topArr.length
+        ? topArr.map(t => `<div class="item-lista"><div class="titulo-item">⚠️ ${t.count}x — ${t.texto}</div><div class="meta" style="margin-top:5px;">Exemplo: ${t.exemplo}</div></div>`).join('')
+        : vazioHTML('🎉', 'Nenhum apontamento no período', 'Excelente! Nenhum ponto de melhoria registrado.'))
+    : vazioHTML('⚠️', 'Sem avaliações no período', 'Os principais apontamentos aparecerão aqui.');
+}
+function inicioSemana(d){
+  const x = new Date(d); const dia = (x.getDay() + 6) % 7; x.setDate(x.getDate() - dia); x.setHours(0,0,0,0); return x;
+}
+
+/* =========================================================
+   GESTÃO (SÓ ADM)
+========================================================= */
+function renderUsuarios(){
+  const div = byId('listaUsuarios');
+  if(!div) return;
+  if(!usuarios.length){ div.innerHTML = vazioHTML('👥', 'Nenhum usuário cadastrado', 'Adicione usuários abaixo para liberar o acesso ao sistema.'); return; }
+  div.innerHTML = usuarios.map(u => `
+    <div class="item-lista">
+      <div class="linha1">
+        <div>
+          <div class="titulo-item">${u.nome} <span style="font-weight:400;color:var(--cinza);font-size:.8rem;">(${u.login})</span></div>
+          <div class="meta">Perfil: ${u.perfil}</div>
+        </div>
+        <button class="btn-peq btn-vermelho" onclick="excluirUsuario(${usuarios.indexOf(u)})">🗑️ Excluir</button>
+      </div>
+    </div>`).join('');
+}
+async function adicionarUsuario(){
+  const login = byId('novoLogin').value.trim().toLowerCase();
+  const senha = byId('novaSenha').value;
+  const perfil = byId('novoPerfil').value;
+  if(!/^[a-záéíóúâêôãõç]+\.[a-záéíóúâêôãõç]+$/i.test(login)){
+    toastErro('Login inválido. Use o formato nome.sobrenome.'); return;
+  }
+  if(!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(senha)){
+    toastErro('Senha fraca. Use letras, números e símbolos (ex: Ana@2026).'); return;
+  }
+  if(usuarios.some(u => u.login === login)){ toastErro('Este login já existe.'); return; }
+  const nome = login.split('.')[0];
+  const novo = { login, senha, perfil, nome: nome.charAt(0).toUpperCase() + nome.slice(1) };
+  try{
+    await gravarUsuario(novo);
+  }catch(e){
+    toastErro(e.message || 'Erro ao incluir usuário.');
+    return;
+  }
+  usuarios.push(novo);
+  const nl = byId('novoLogin'); if(nl) nl.value = '';
+  const ns = byId('novaSenha'); if(ns) ns.value = '';
+  renderUsuarios();
+  renderAvaliados();
+  toastSucesso('Usuário incluído!');
+}
+function excluirUsuario(idx){
+  if(usuarios[idx].login === sessao.login){ toastErro('Você não pode excluir a si mesmo.'); return; }
+  modalConfirm('Excluir este usuário?', async () => {
+    const login = usuarios[idx].login;
+    await removerUsuario(login);
+    usuarios.splice(idx, 1);
+    renderUsuarios();
+    renderAvaliados();
+    toastSucesso('Usuário excluído.');
+  });
+}
+function renderQuestoesGestao(){
+  const div = byId('listaQuestoesGestao');
+  if(!div) return;
+  garantirQuestoes();
+  div.innerHTML = questoes.map((q,i) => `
+    <div class="item-lista">
+      <div class="linha1">
+        <div class="titulo-item">${i+1}. ${q.texto}</div>
+        <button class="btn-peq btn-vermelho" onclick="excluirQuestao(${i})">🗑️ Excluir</button>
+      </div>
+      <div class="meta">Categoria: ${CATEGORIAS[q.cat].nome} | Vale até ${valorMaxQuestao(i).toFixed(2).replace('.',',')} pts</div>
+    </div>`).join('') +
+    `<div class="grid3" style="margin-top:14px;align-items:end;">
+      <div class="campo">
+        <label>Nova questão</label>
+        <input type="text" id="novaQuestao" placeholder="Texto da nova questão...">
+      </div>
+      <div class="campo">
+        <label>Categoria</label>
+        <select id="catNovaQuestao">${CATEGORIAS.map((c,i)=>`<option value="${i}">${c.nome}</option>`).join('')}</select>
+      </div>
+      <div class="campo">
+        <button class="btn btn-primario" onclick="adicionarQuestao()">➕ Incluir questão</button>
+      </div>
+    </div>`;
+}
+function adicionarQuestao(){
+  const texto = byId('novaQuestao').value.trim();
+  if(!texto){ toastErro('Digite o texto da questão.'); return; }
+  questoes.push({ cat: Number(byId('catNovaQuestao').value), texto });
+  renderQuestoesGestao(); renderQuestoes(); calcularTotal();
+  toastSucesso('Questão incluída! O peso da categoria é redistribuído automaticamente.');
+}
+function excluirQuestao(i){
+  modalConfirm('Excluir esta questão?', () => {
+    questoes.splice(i, 1);
+    renderQuestoesGestao(); renderQuestoes(); calcularTotal();
+    toastSucesso('Questão excluída.');
+  });
+}
+
+/* =========================================================
+   LIMPEZA DE DADOS DE TESTE
+========================================================= */
+function limparDadosTeste(){
+  if(modoPlanilha()){
+    toastErro('Em modo planilha os dados ficam no Google Sheets. Para apagar tudo, edite a planilha diretamente.');
+    return;
+  }
+  modalConfirm('Isso apagará TODAS as avaliações, processos, comunicados e usuários locais de demonstração (voltam os 3 usuários padrão). Continuar?', () => {
+    localStorage.removeItem(CHAVE_AVAL);
+    localStorage.removeItem(CHAVE_PROC);
+    localStorage.removeItem(CHAVE_COM);
+    localStorage.removeItem(CHAVE_USER);
+    location.reload();
+  });
+}
+
+/* =========================================================
+   MODAIS
+========================================================= */
+function abrirModalBox(id){ const el = byId(id); if(el) el.classList.add('aberto'); }
+function fecharModalBox(id){ const el = byId(id); if(el) el.classList.remove('aberto'); }
+function fecharModal(ev, id){ if(ev.target === ev.currentTarget) fecharModalBox(id); }
+</script>
+</body>
+</html>
