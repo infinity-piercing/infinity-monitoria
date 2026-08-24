@@ -8,204 +8,151 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --verde-escuro:#0A312B; --verde-medio:#0E443B; --verde-claro:#12705E; --verde-suave:#1E8F78; --verde-agua:#2AA198;
-    --fundo:#F6FAF9; --branco:#FFFFFF; --cinza:#6B7280; --borda:#E5EBE9;
-    --vermelho:#DC2626; --amarelo:#F59E0B; --verde-ok:#16A34A;
-  }
-  *{ margin:0; padding:0; box-sizing:border-box; }
-  body{ background:var(--fundo); color:#1F2933; font-family:'Inter',Arial,sans-serif; }
-  h1,h2,h3,.titulo{ font-family:'Poppins',sans-serif; }
-
-  /* ===== TOASTS ===== */
-  #toastContainer{ position:fixed; top:20px; right:20px; z-index:300; display:flex; flex-direction:column; gap:10px; }
-  .toast{ display:flex; align-items:flex-start; gap:10px; background:#fff; border-radius:12px; padding:13px 16px;
-    box-shadow:0 10px 28px rgba(10,49,43,.2); border-left:4px solid var(--verde-claro); min-width:260px; max-width:380px;
-    animation:toastIn .3s ease; font-size:.85rem; line-height:1.45; }
-  .toast.saindo{ animation:toastOut .3s ease forwards; }
-  .toast.success{ border-left-color:#16A34A; }
-  .toast.error{ border-left-color:#DC2626; }
-  .toast.info{ border-left-color:var(--verde-agua); }
-  .toast .t-icon{ font-size:1.15rem; flex-shrink:0; margin-top:1px; }
-  @keyframes toastIn{ from{ transform:translateX(40px); opacity:0; } to{ transform:none; opacity:1; } }
-  @keyframes toastOut{ to{ transform:translateX(40px); opacity:0; } }
-
-  /* ===== LOGIN ===== */
-  #telaLogin{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; position:relative;
-    background:
-      radial-gradient(circle at 12% 18%, rgba(255,255,255,.07) 0, transparent 32%),
-      radial-gradient(circle at 88% 82%, rgba(42,161,152,.28) 0, transparent 42%),
-      linear-gradient(160deg, var(--verde-escuro) 0%, var(--verde-medio) 52%, var(--verde-claro) 100%); }
-  .card-login{ background:rgba(255,255,255,.98); border-radius:22px; padding:42px 38px; width:100%; max-width:420px;
-    box-shadow:0 24px 70px rgba(0,0,0,.45); animation:subir .55s ease; }
-  .logo-login{ display:block; margin:0 auto 18px; height:112px; filter:drop-shadow(0 6px 14px rgba(10,49,43,.28)); }
-  .card-login h1{ font-size:1.3rem; color:var(--verde-escuro); text-align:center; margin-bottom:4px; font-weight:700; }
-  .card-login p.sub{ font-size:.84rem; color:var(--cinza); text-align:center; margin-bottom:26px; }
-  .campo{ margin-bottom:15px; }
-  .campo label{ display:block; font-size:.78rem; font-weight:600; color:#374151; margin-bottom:5px; }
-  .campo input, .campo select, .campo textarea{ width:100%; padding:11px 13px; border:1.5px solid var(--borda); border-radius:10px; font-size:.9rem; font-family:'Inter',sans-serif; transition:border-color .15s, box-shadow .15s; background:#fff; }
-  .campo input:focus, .campo select:focus, .campo textarea:focus{ outline:none; border-color:var(--verde-claro); box-shadow:0 0 0 3px rgba(18,112,94,.15); }
-  .dica-senha{ font-size:.72rem; color:var(--cinza); margin-top:5px; }
-  .btn{ width:100%; padding:13px; border:none; border-radius:10px; font-size:.95rem; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; transition:transform .12s, box-shadow .12s; }
-  .btn:hover{ transform:translateY(-1px); }
-  .btn-primario{ background:linear-gradient(135deg,var(--verde-claro),var(--verde-suave)); color:#fff; box-shadow:0 6px 16px rgba(18,112,94,.3); }
-  .btn-primario:hover{ box-shadow:0 8px 20px rgba(18,112,94,.4); }
-  .btn-secundario{ background:#fff; color:var(--verde-claro); border:2px solid var(--verde-claro); }
-  .btn-secundario:hover{ background:#F0FDF9; }
-  .btn-vermelho{ background:var(--vermelho); color:#fff; }
-  .erro-login{ background:#FEF2F2; color:var(--vermelho); font-size:.8rem; padding:10px 13px; border-radius:10px; margin-bottom:14px; display:none; border:1px solid #FECACA; }
-  .acessos-demo{ margin-top:20px; background:#F0FDF9; border:1.5px dashed var(--verde-claro); border-radius:10px; padding:12px 14px; font-size:.72rem; color:var(--verde-medio); line-height:1.7; }
-  @keyframes subir{ from{ transform:translateY(20px); opacity:0; } to{ transform:none; opacity:1; } }
-
-  /* ===== APP ===== */
-  #app{ display:none; min-height:100vh; }
-  .topbar{ background:linear-gradient(90deg,var(--verde-escuro),var(--verde-medio)); color:#fff; display:flex; align-items:center; justify-content:space-between; padding:10px 22px; position:sticky; top:0; z-index:50; box-shadow:0 2px 12px rgba(10,49,43,.25); }
-  .topbar .esquerda{ display:flex; align-items:center; gap:12px; }
-  .topbar .logo-mini{ height:38px; }
-  .topbar .titulo{ font-size:1rem; font-weight:600; }
-  .topbar .usuario{ display:flex; align-items:center; gap:10px; font-size:.82rem; }
-  .badge-perfil{ padding:3px 10px; border-radius:20px; font-size:.68rem; font-weight:700; }
-  .badge-adm{ background:#7F1D1D; color:#fff; }
-  .badge-avaliador{ background:#92400E; color:#fff; }
-  .badge-atendente{ background:var(--verde-agua); color:#fff; }
-  .btn-sair{ background:transparent; border:1px solid rgba(255,255,255,.4); color:#fff; padding:5px 12px; border-radius:8px; cursor:pointer; font-size:.78rem; }
-  .btn-sair:hover{ background:rgba(255,255,255,.12); }
-
-  /* ===== GUIAS ===== */
-  .nav-guias{ background:var(--branco); border-bottom:1px solid var(--borda); padding:0 22px; display:flex; gap:4px; flex-wrap:wrap; }
-  .guia{ padding:14px 18px; background:none; border:none; border-bottom:3px solid transparent; font-size:.88rem; font-weight:600; color:var(--cinza); cursor:pointer; display:flex; align-items:center; gap:7px; font-family:'Poppins',sans-serif; transition:color .15s; }
-  .guia:hover{ color:var(--verde-claro); }
-  .guia.ativa{ color:var(--verde-escuro); border-bottom-color:var(--verde-claro); }
-  .badge-aviso{ background:var(--vermelho); color:#fff; border-radius:20px; font-size:.65rem; font-weight:700; padding:1px 7px; }
-  .conteudo{ max-width:1000px; margin:0 auto; padding:26px 22px 70px; }
-  .painel{ display:none; }
-  .painel.ativo{ display:block; animation:fade .3s ease; }
-  @keyframes fade{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
-
-  /* ===== CARDS ===== */
-  .card{ background:var(--branco); border:1px solid var(--borda); border-radius:16px; padding:22px 24px; margin-bottom:18px; box-shadow:0 2px 10px rgba(10,49,43,.04); }
-  .card h2{ font-size:1rem; color:var(--verde-escuro); border-bottom:2px solid #E6F4F0; padding-bottom:10px; margin-bottom:18px; display:flex; align-items:center; gap:8px; font-weight:600; }
-  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  .grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
-  .grid4{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
-  .aviso-help{ background:#F0FDF9; border-left:4px solid var(--verde-agua); padding:11px 14px; border-radius:8px; font-size:.8rem; color:var(--verde-medio); margin-bottom:18px; line-height:1.5; }
-
-  /* ===== QUESTÕES ===== */
-  .questao{ border:1px solid var(--borda); border-radius:12px; padding:14px 16px; margin-bottom:12px; background:#FCFEFD; transition:border-color .15s; }
-  .questao:hover{ border-color:#CBE8E0; }
-  .questao .q-top{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
-  .questao .q-texto{ font-size:.88rem; font-weight:500; line-height:1.45; }
-  .nota{ font-size:1.2rem; font-weight:800; color:var(--verde-claro); min-width:42px; text-align:center; font-family:'Poppins',sans-serif; }
-  input[type=range].slider{ -webkit-appearance:none; appearance:none; width:100%; height:9px; border-radius:20px; margin-top:10px;
-    background:linear-gradient(to right, var(--verde-claro) var(--val,0%), #E5EBE9 var(--val,0%)); outline:none; cursor:pointer; }
-  input[type=range].slider::-webkit-slider-thumb{ -webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:#fff; border:3.5px solid var(--verde-claro); box-shadow:0 2px 8px rgba(10,49,43,.3); cursor:pointer; }
-  input[type=range].slider::-moz-range-thumb{ width:20px; height:20px; border-radius:50%; background:#fff; border:3.5px solid var(--verde-claro); box-shadow:0 2px 8px rgba(10,49,43,.3); cursor:pointer; }
-  .escala{ display:flex; justify-content:space-between; font-size:.68rem; color:var(--cinza); margin-top:4px; }
-  .peso-info{ font-size:.68rem; color:var(--cinza); background:#F3F6F5; display:inline-block; padding:2px 9px; border-radius:10px; margin-top:6px; }
-  .apontamento{ margin-top:10px; }
-  .apontamento label{ font-size:.72rem; font-weight:600; color:var(--cinza); }
-  .apontamento textarea{ width:100%; padding:9px 11px; border:1.5px solid var(--borda); border-radius:10px; font-size:.8rem; min-height:44px; resize:vertical; font-family:'Inter',sans-serif; }
-  .apontamento textarea:focus{ outline:none; border-color:var(--verde-claro); box-shadow:0 0 0 3px rgba(18,112,94,.12); }
-  .apontamento .obrigatorio{ color:var(--vermelho); font-weight:700; font-size:.68rem; }
-  .bloco-texto{ font-size:.8rem; background:#F7FAF9; padding:9px 11px; border-radius:8px; margin-top:5px; line-height:1.55; }
-
-  /* ===== RESULTADO ===== */
-  .resultado{ display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,#F0FDF9,#E6F6F2); border:1px solid #CBE8E0; border-radius:14px; padding:16px 18px; }
-  .resultado .total{ font-size:2.6rem; font-weight:800; color:var(--verde-escuro); font-family:'Poppins',sans-serif; }
-  .classificacao{ padding:7px 18px; border-radius:22px; color:#fff; font-weight:700; font-size:.9rem; font-family:'Poppins',sans-serif; }
-
-  /* ===== LISTAS ===== */
-  .item-lista{ border:1px solid var(--borda); border-radius:12px; padding:15px 17px; margin-bottom:11px; background:var(--branco); transition:box-shadow .15s, border-color .15s; }
-  .item-lista .linha1{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
-  .item-lista .titulo-item{ font-weight:600; font-size:.9rem; font-family:'Poppins',sans-serif; }
-  .item-lista .meta{ font-size:.75rem; color:var(--cinza); margin-top:3px; }
-  .item-lista .acoes{ display:flex; gap:8px; margin-top:11px; flex-wrap:wrap; }
-  .btn-peq{ padding:7px 13px; border:none; border-radius:8px; font-size:.75rem; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; transition:filter .12s; }
-  .btn-peq:hover{ filter:brightness(1.08); }
-  .btn-ok{ background:var(--verde-claro); color:#fff; }
-  .btn-contestar{ background:var(--amarelo); color:#fff; }
-  .btn-adm{ background:#7F1D1D; color:#fff; }
-  .btn-editar{ background:#1D4ED8; color:#fff; }
-  .status{ font-size:.7rem; font-weight:700; padding:3px 11px; border-radius:20px; }
-  .status-pendente{ background:#FEF3C7; color:#92400E; }
-  .status-aceita{ background:#DCFCE7; color:var(--verde-ok); }
-  .status-contestada{ background:#FEE2E2; color:var(--vermelho); }
-  .status-contestacao-aceita{ background:#EDE9FE; color:#6D28D9; }
-  .clicavel{ cursor:pointer; transition:box-shadow .15s, transform .12s; }
-  .clicavel:hover{ box-shadow:0 6px 18px rgba(10,49,43,.1); transform:translateY(-1px); }
-  .dica-clique{ font-size:.72rem; color:var(--cinza); font-style:italic; margin-bottom:12px; }
-
-  /* ===== ESTADOS VAZIOS ===== */
-  .vazio-estado{ text-align:center; color:var(--cinza); padding:34px 16px; }
-  .vazio-estado .v-icone{ font-size:2.4rem; opacity:.7; margin-bottom:8px; }
-  .vazio-estado .v-titulo{ font-size:.9rem; font-weight:600; color:#4B5563; margin-bottom:4px; }
-  .vazio-estado .v-dica{ font-size:.78rem; color:var(--cinza); }
-
-  /* ===== BUSCA ===== */
-  .campo-busca{ position:relative; }
-  .campo-busca .icone{ position:absolute; left:13px; top:35px; color:var(--cinza); font-size:.85rem; }
-  .campo-busca input{ padding-left:38px; }
-
-  /* ===== MODAIS ===== */
-  .modal-overlay{ position:fixed; inset:0; background:rgba(10,49,43,.58); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; backdrop-filter:blur(3px); }
-  .modal-overlay.aberto{ display:flex; }
-  .modal-box{ background:#fff; border-radius:16px; max-width:780px; width:100%; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,.45); animation:subir .3s ease; }
-  .modal-header{ background:linear-gradient(135deg,var(--verde-escuro),var(--verde-medio)); color:#fff; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
-  .modal-header h2{ font-size:1rem; font-weight:600; }
-  .btn-fechar{ background:rgba(255,255,255,.16); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:.95rem; font-weight:700; }
-  .btn-fechar:hover{ background:rgba(255,255,255,.32); }
-  .modal-body{ padding:20px 22px; overflow-y:auto; }
-  .modal-total{ background:#F0FDF9; border:1px solid #CBE8E0; border-radius:12px; padding:13px 17px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; font-weight:700; font-family:'Poppins',sans-serif; font-size:.9rem; }
-
-  /* ===== CONTESTAÇÃO ===== */
-  .contestar-item label.q-texto{ cursor:pointer; display:flex; gap:9px; align-items:flex-start; }
-  .contestar-item input[type=checkbox]{ width:auto; accent-color:var(--verde-claro); margin-top:3px; transform:scale(1.2); cursor:pointer; }
-  .justificativa{ background:#FEFCE8; border:1px solid #FDE68A; border-radius:10px; padding:11px; margin-top:10px; }
-
-  /* ===== TIMELINE ===== */
-  .timeline{ border-left:3px solid #CBE8E0; margin:12px 0 16px 6px; padding-left:18px; }
-  .timeline .evento{ position:relative; margin-bottom:13px; }
-  .timeline .evento::before{ content:''; position:absolute; left:-24px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--verde-claro); box-shadow:0 0 0 3px #E6F4F0; }
-  .timeline .evento .e-data{ font-size:.68rem; color:var(--cinza); }
-  .timeline .evento .e-titulo{ font-size:.82rem; font-weight:600; }
-  .timeline .evento .e-detalhe{ font-size:.76rem; color:#374151; background:#F7FAF9; padding:7px 11px; border-radius:8px; margin-top:5px; white-space:pre-line; }
-
-  /* ===== DASHBOARD ===== */
-  .kpi{ background:var(--branco); border:1px solid var(--borda); border-radius:14px; padding:18px; text-align:center; box-shadow:0 2px 10px rgba(10,49,43,.04); }
-  .kpi .k-valor{ font-size:2rem; font-weight:800; color:var(--verde-escuro); font-family:'Poppins',sans-serif; }
-  .kpi .k-label{ font-size:.75rem; color:var(--cinza); margin-top:3px; }
-  .kpi .k-tendencia{ font-size:.72rem; font-weight:700; margin-top:5px; }
-  .barra-container{ display:flex; align-items:flex-end; gap:8px; height:140px; margin-top:12px; }
-  .barra{ flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:4px; }
-  .barra .b{ width:100%; max-width:44px; background:linear-gradient(180deg,var(--verde-suave),var(--verde-claro)); border-radius:6px 6px 0 0; min-height:4px; transition:height .4s ease; }
-  .barra .b-lbl{ font-size:.62rem; color:var(--cinza); text-align:center; }
-  .barra .b-val{ font-size:.66rem; font-weight:700; color:var(--verde-escuro); }
-  .chip{ display:inline-block; padding:5px 13px; border-radius:22px; font-size:.75rem; font-weight:600; margin:3px 4px 3px 0; }
-  .filtro-dash{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:18px; }
-  .filtro-dash .campo{ margin-bottom:0; }
-
-  /* ===== COMUNICADOS ===== */
-  .comunicado{ border:1px solid var(--borda); border-radius:12px; padding:15px 17px; margin-bottom:11px; background:var(--branco); cursor:pointer; transition:box-shadow .15s; }
-  .comunicado:hover{ box-shadow:0 6px 18px rgba(10,49,43,.1); }
-  .comunicado.nao-lido{ border-left:4px solid var(--verde-claro); background:#F7FDFB; }
-  .comunicado .c-top{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-  .comunicado .c-titulo{ font-weight:600; font-size:.9rem; font-family:'Poppins',sans-serif; }
-  .comunicado .c-data{ font-size:.7rem; color:var(--cinza); }
-  .comunicado .c-msg{ font-size:.82rem; margin-top:7px; color:#374151; line-height:1.55; }
-  .comunicado .c-tipo{ font-size:.66rem; font-weight:700; padding:2px 9px; border-radius:10px; background:#E6F4F0; color:var(--verde-medio); display:inline-block; margin-top:6px; }
-  .comunicado .c-resumo{ font-size:.76rem; color:var(--cinza); font-style:italic; }
-  .comunicado .c-rodape{ display:flex; justify-content:space-between; align-items:center; margin-top:9px; flex-wrap:wrap; gap:8px; }
-  .nao-lido-flag{ background:var(--vermelho); color:#fff; font-size:.6rem; font-weight:700; padding:2px 8px; border-radius:10px; }
-
-  @media (max-width:760px){ .grid2,.grid3,.grid4{ grid-template-columns:1fr; } .nav-guias{ padding:0 10px; } .guia{ padding:12px 12px; font-size:.8rem; } }
+:root{--verde-escuro:#0A312B;--verde-medio:#0E443B;--verde-claro:#12705E;--verde-suave:#1E8F78;--verde-agua:#2AA198;--fundo:#F6FAF9;--branco:#FFFFFF;--cinza:#6B7280;--borda:#E5EBE9;--vermelho:#DC2626;--amarelo:#F59E0B;--verde-ok:#16A34A;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--fundo);color:#1F2933;font-family:'Inter',Arial,sans-serif;}
+h1,h2,h3,.titulo{font-family:'Poppins',sans-serif;}
+#toastContainer{position:fixed;top:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:10px;}
+.toast{display:flex;align-items:flex-start;gap:10px;background:#fff;border-radius:12px;padding:13px 16px;box-shadow:0 10px 28px rgba(10,49,43,.2);border-left:4px solid var(--verde-claro);min-width:260px;max-width:380px;animation:toastIn .3s ease;font-size:.85rem;line-height:1.45;}
+.toast.saindo{animation:toastOut .3s ease forwards;}
+.toast.success{border-left-color:#16A34A;}.toast.error{border-left-color:#DC2626;}.toast.info{border-left-color:var(--verde-agua);}
+.toast .t-icon{font-size:1.15rem;flex-shrink:0;margin-top:1px;}
+@keyframes toastIn{from{transform:translateX(40px);opacity:0;}to{transform:none;opacity:1;}}
+@keyframes toastOut{to{transform:translateX(40px);opacity:0;}}
+#telaLogin{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 12% 18%,rgba(255,255,255,.07) 0,transparent 32%),radial-gradient(circle at 88% 82%,rgba(42,161,152,.28) 0,transparent 42%),linear-gradient(160deg,var(--verde-escuro) 0%,var(--verde-medio) 52%,var(--verde-claro) 100%);}
+.card-login{background:rgba(255,255,255,.98);border-radius:22px;padding:42px 38px;width:100%;max-width:420px;box-shadow:0 24px 70px rgba(0,0,0,.45);animation:subir .55s ease;}
+.logo-login{display:block;margin:0 auto 18px;height:112px;filter:drop-shadow(0 6px 14px rgba(10,49,43,.28));}
+.card-login h1{font-size:1.3rem;color:var(--verde-escuro);text-align:center;margin-bottom:4px;font-weight:700;}
+.card-login p.sub{font-size:.84rem;color:var(--cinza);text-align:center;margin-bottom:26px;}
+.campo{margin-bottom:15px;}
+.campo label{display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:5px;}
+.campo input,.campo select,.campo textarea{width:100%;padding:11px 13px;border:1.5px solid var(--borda);border-radius:10px;font-size:.9rem;font-family:'Inter',sans-serif;transition:border-color .15s,box-shadow .15s;background:#fff;}
+.campo input:focus,.campo select:focus,.campo textarea:focus{outline:none;border-color:var(--verde-claro);box-shadow:0 0 0 3px rgba(18,112,94,.15);}
+.dica-senha{font-size:.72rem;color:var(--cinza);margin-top:5px;}
+.btn{width:100%;padding:13px;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:transform .12s,box-shadow .12s;}
+.btn:hover{transform:translateY(-1px);}
+.btn-primario{background:linear-gradient(135deg,var(--verde-claro),var(--verde-suave));color:#fff;box-shadow:0 6px 16px rgba(18,112,94,.3);}
+.btn-secundario{background:#fff;color:var(--verde-claro);border:2px solid var(--verde-claro);}
+.btn-vermelho{background:var(--vermelho);color:#fff;}
+.erro-login{background:#FEF2F2;color:var(--vermelho);font-size:.8rem;padding:10px 13px;border-radius:10px;margin-bottom:14px;display:none;border:1px solid #FECACA;}
+.acessos-demo{margin-top:20px;background:#F0FDF9;border:1.5px dashed var(--verde-claro);border-radius:10px;padding:12px 14px;font-size:.72rem;color:var(--verde-medio);line-height:1.7;}
+@keyframes subir{from{transform:translateY(20px);opacity:0;}to{transform:none;opacity:1;}}
+#app{display:none;min-height:100vh;}
+.topbar{background:linear-gradient(90deg,var(--verde-escuro),var(--verde-medio));color:#fff;display:flex;align-items:center;justify-content:space-between;padding:10px 22px;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(10,49,43,.25);}
+.topbar .esquerda{display:flex;align-items:center;gap:12px;}
+.topbar .logo-mini{height:38px;}
+.topbar .titulo{font-size:1rem;font-weight:600;}
+.topbar .usuario{display:flex;align-items:center;gap:10px;font-size:.82rem;}
+.badge-perfil{padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;}
+.badge-adm{background:#7F1D1D;color:#fff;}
+.badge-avaliador{background:#92400E;color:#fff;}
+.badge-atendente{background:var(--verde-agua);color:#fff;}
+.btn-sair{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:.78rem;}
+.nav-guias{background:var(--branco);border-bottom:1px solid var(--borda);padding:0 22px;display:flex;gap:4px;flex-wrap:wrap;}
+.guia{padding:14px 18px;background:none;border:none;border-bottom:3px solid transparent;font-size:.88rem;font-weight:600;color:var(--cinza);cursor:pointer;display:flex;align-items:center;gap:7px;font-family:'Poppins',sans-serif;}
+.guia:hover{color:var(--verde-claro);}
+.guia.ativa{color:var(--verde-escuro);border-bottom-color:var(--verde-claro);}
+.badge-aviso{background:var(--vermelho);color:#fff;border-radius:20px;font-size:.65rem;font-weight:700;padding:1px 7px;}
+.conteudo{max-width:1000px;margin:0 auto;padding:26px 22px 70px;}
+.painel{display:none;}
+.painel.ativo{display:block;animation:fade .3s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.card{background:var(--branco);border:1px solid var(--borda);border-radius:16px;padding:22px 24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(10,49,43,.04);}
+.card h2{font-size:1rem;color:var(--verde-escuro);border-bottom:2px solid #E6F4F0;padding-bottom:10px;margin-bottom:18px;display:flex;align-items:center;gap:8px;font-weight:600;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.aviso-help{background:#F0FDF9;border-left:4px solid var(--verde-agua);padding:11px 14px;border-radius:8px;font-size:.8rem;color:var(--verde-medio);margin-bottom:18px;line-height:1.5;}
+.questao{border:1px solid var(--borda);border-radius:12px;padding:14px 16px;margin-bottom:12px;background:#FCFEFD;}
+.questao .q-top{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.questao .q-texto{font-size:.88rem;font-weight:500;line-height:1.45;}
+.nota{font-size:1.2rem;font-weight:800;color:var(--verde-claro);min-width:42px;text-align:center;font-family:'Poppins',sans-serif;}
+input[type=range].slider{-webkit-appearance:none;appearance:none;width:100%;height:9px;border-radius:20px;margin-top:10px;background:linear-gradient(to right,var(--verde-claro) var(--val,0%),#E5EBE9 var(--val,0%));outline:none;cursor:pointer;}
+input[type=range].slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3.5px solid var(--verde-claro);box-shadow:0 2px 8px rgba(10,49,43,.3);cursor:pointer;}
+input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3.5px solid var(--verde-claro);cursor:pointer;}
+.escala{display:flex;justify-content:space-between;font-size:.68rem;color:var(--cinza);margin-top:4px;}
+.peso-info{font-size:.68rem;color:var(--cinza);background:#F3F6F5;display:inline-block;padding:2px 9px;border-radius:10px;margin-top:6px;}
+.apontamento{margin-top:10px;}
+.apontamento label{font-size:.72rem;font-weight:600;color:var(--cinza);}
+.apontamento textarea{width:100%;padding:9px 11px;border:1.5px solid var(--borda);border-radius:10px;font-size:.8rem;min-height:44px;resize:vertical;font-family:'Inter',sans-serif;}
+.apontamento .obrigatorio{color:var(--vermelho);font-weight:700;font-size:.68rem;}
+.bloco-texto{font-size:.8rem;background:#F7FAF9;padding:9px 11px;border-radius:8px;margin-top:5px;line-height:1.55;}
+.resultado{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#F0FDF9,#E6F6F2);border:1px solid #CBE8E0;border-radius:14px;padding:16px 18px;}
+.resultado .total{font-size:2.6rem;font-weight:800;color:var(--verde-escuro);font-family:'Poppins',sans-serif;}
+.classificacao{padding:7px 18px;border-radius:22px;color:#fff;font-weight:700;font-size:.9rem;font-family:'Poppins',sans-serif;}
+.item-lista{border:1px solid var(--borda);border-radius:12px;padding:15px 17px;margin-bottom:11px;background:var(--branco);}
+.item-lista .linha1{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.item-lista .titulo-item{font-weight:600;font-size:.9rem;font-family:'Poppins',sans-serif;}
+.item-lista .meta{font-size:.75rem;color:var(--cinza);margin-top:3px;}
+.item-lista .acoes{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;}
+.btn-peq{padding:7px 13px;border:none;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;}
+.btn-ok{background:var(--verde-claro);color:#fff;}
+.btn-contestar{background:var(--amarelo);color:#fff;}
+.btn-adm{background:#7F1D1D;color:#fff;}
+.btn-editar{background:#1D4ED8;color:#fff;}
+.status{font-size:.7rem;font-weight:700;padding:3px 11px;border-radius:20px;}
+.status-pendente{background:#FEF3C7;color:#92400E;}
+.status-aceita{background:#DCFCE7;color:var(--verde-ok);}
+.status-contestada{background:#FEE2E2;color:var(--vermelho);}
+.status-contestacao-aceita{background:#EDE9FE;color:#6D28D9;}
+.clicavel{cursor:pointer;transition:box-shadow .15s,transform .12s;}
+.clicavel:hover{box-shadow:0 6px 18px rgba(10,49,43,.1);transform:translateY(-1px);}
+.dica-clique{font-size:.72rem;color:var(--cinza);font-style:italic;margin-bottom:12px;}
+.vazio-estado{text-align:center;color:var(--cinza);padding:34px 16px;}
+.vazio-estado .v-icone{font-size:2.4rem;opacity:.7;margin-bottom:8px;}
+.vazio-estado .v-titulo{font-size:.9rem;font-weight:600;color:#4B5563;margin-bottom:4px;}
+.vazio-estado .v-dica{font-size:.78rem;color:var(--cinza);}
+.campo-busca{position:relative;}
+.campo-busca .icone{position:absolute;left:13px;top:35px;color:var(--cinza);font-size:.85rem;}
+.campo-busca input{padding-left:38px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(10,49,43,.58);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(3px);}
+.modal-overlay.aberto{display:flex;}
+.modal-box{background:#fff;border-radius:16px;max-width:780px;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.45);animation:subir .3s ease;}
+.modal-header{background:linear-gradient(135deg,var(--verde-escuro),var(--verde-medio));color:#fff;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.modal-header h2{font-size:1rem;font-weight:600;}
+.btn-fechar{background:rgba(255,255,255,.16);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:.95rem;font-weight:700;}
+.modal-body{padding:20px 22px;overflow-y:auto;}
+.modal-total{background:#F0FDF9;border:1px solid #CBE8E0;border-radius:12px;padding:13px 17px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-weight:700;font-family:'Poppins',sans-serif;font-size:.9rem;}
+.contestar-item label.q-texto{cursor:pointer;display:flex;gap:9px;align-items:flex-start;}
+.contestar-item input[type=checkbox]{width:auto;accent-color:var(--verde-claro);margin-top:3px;transform:scale(1.2);cursor:pointer;}
+.justificativa{background:#FEFCE8;border:1px solid #FDE68A;border-radius:10px;padding:11px;margin-top:10px;}
+.timeline{border-left:3px solid #CBE8E0;margin:12px 0 16px 6px;padding-left:18px;}
+.timeline .evento{position:relative;margin-bottom:13px;}
+.timeline .evento::before{content:'';position:absolute;left:-24px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--verde-claro);box-shadow:0 0 0 3px #E6F4F0;}
+.timeline .evento .e-data{font-size:.68rem;color:var(--cinza);}
+.timeline .evento .e-titulo{font-size:.82rem;font-weight:600;}
+.timeline .evento .e-detalhe{font-size:.76rem;color:#374151;background:#F7FAF9;padding:7px 11px;border-radius:8px;margin-top:5px;white-space:pre-line;}
+.kpi{background:var(--branco);border:1px solid var(--borda);border-radius:14px;padding:18px;text-align:center;}
+.kpi .k-valor{font-size:2rem;font-weight:800;color:var(--verde-escuro);font-family:'Poppins',sans-serif;}
+.kpi .k-label{font-size:.75rem;color:var(--cinza);margin-top:3px;}
+.kpi .k-tendencia{font-size:.72rem;font-weight:700;margin-top:5px;}
+.barra-container{display:flex;align-items:flex-end;gap:8px;height:140px;margin-top:12px;}
+.barra{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;}
+.barra .b{width:100%;max-width:44px;background:linear-gradient(180deg,var(--verde-suave),var(--verde-claro));border-radius:6px 6px 0 0;min-height:4px;transition:height .4s ease;}
+.barra .b-lbl{font-size:.62rem;color:var(--cinza);text-align:center;}
+.barra .b-val{font-size:.66rem;font-weight:700;color:var(--verde-escuro);}
+.chip{display:inline-block;padding:5px 13px;border-radius:22px;font-size:.75rem;font-weight:600;margin:3px 4px 3px 0;}
+.filtro-dash{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px;}
+.filtro-dash .campo{margin-bottom:0;}
+.comunicado{border:1px solid var(--borda);border-radius:12px;padding:15px 17px;margin-bottom:11px;background:var(--branco);cursor:pointer;}
+.comunicado:hover{box-shadow:0 6px 18px rgba(10,49,43,.1);}
+.comunicado.nao-lido{border-left:4px solid var(--verde-claro);background:#F7FDFB;}
+.comunicado .c-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.comunicado .c-titulo{font-weight:600;font-size:.9rem;font-family:'Poppins',sans-serif;}
+.comunicado .c-data{font-size:.7rem;color:var(--cinza);}
+.comunicado .c-msg{font-size:.82rem;margin-top:7px;color:#374151;line-height:1.55;}
+.comunicado .c-tipo{font-size:.66rem;font-weight:700;padding:2px 9px;border-radius:10px;background:#E6F4F0;color:var(--verde-medio);display:inline-block;margin-top:6px;}
+.comunicado .c-resumo{font-size:.76rem;color:var(--cinza);font-style:italic;}
+.comunicado .c-rodape{display:flex;justify-content:space-between;align-items:center;margin-top:9px;flex-wrap:wrap;gap:8px;}
+.nao-lido-flag{background:var(--vermelho);color:#fff;font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:10px;}
+@media (max-width:760px){.grid2,.grid3,.grid4{grid-template-columns:1fr;}.nav-guias{padding:0 10px;}.guia{padding:12px 12px;font-size:.8rem;}}
 </style>
 </head>
 <body>
 
-<!-- TOASTS -->
 <div id="toastContainer"></div>
 
-<!-- ============ TELA DE LOGIN ============ -->
+<!-- TELA DE LOGIN -->
 <div id="telaLogin">
   <div class="card-login">
     <img src="logo.png" alt="Infinity Piercing" class="logo-login">
@@ -232,7 +179,7 @@
   </div>
 </div>
 
-<!-- ============ SISTEMA ============ -->
+<!-- SISTEMA -->
 <div id="app">
   <div class="topbar">
     <div class="esquerda">
@@ -256,7 +203,7 @@
 
   <div class="conteudo">
 
-    <!-- ===== PAINEL QUALIDADE ===== -->
+    <!-- QUALIDADE -->
     <div class="painel ativo" id="painelQualidade">
       <div class="card">
         <h2>📝 Nova avaliação de atendimento</h2>
@@ -328,7 +275,7 @@
       </div>
     </div>
 
-    <!-- ===== PAINEL DASHBOARD ===== -->
+    <!-- DASHBOARD -->
     <div class="painel" id="painelDashboard">
       <div class="card">
         <h2>📊 Dashboard de avaliações</h2>
@@ -352,25 +299,13 @@
         </div>
         <div class="grid4" id="kpis"></div>
       </div>
-      <div class="card">
-        <h2>📈 Evolução da média (por semana)</h2>
-        <div id="evolucao"></div>
-      </div>
-      <div class="card">
-        <h2>🏷️ Distribuição por classificação</h2>
-        <div id="distribuicao"></div>
-      </div>
-      <div class="card">
-        <h2>⚖️ Média por categoria</h2>
-        <div id="porCategoria"></div>
-      </div>
-      <div class="card">
-        <h2>⚠️ Principais apontamentos</h2>
-        <div id="topApontamentos"></div>
-      </div>
+      <div class="card"><h2>📈 Evolução da média (por semana)</h2><div id="evolucao"></div></div>
+      <div class="card"><h2>🏷️ Distribuição por classificação</h2><div id="distribuicao"></div></div>
+      <div class="card"><h2>⚖️ Média por categoria</h2><div id="porCategoria"></div></div>
+      <div class="card"><h2>⚠️ Principais apontamentos</h2><div id="topApontamentos"></div></div>
     </div>
 
-    <!-- ===== PAINEL PROCESSOS ===== -->
+    <!-- PROCESSOS -->
     <div class="painel" id="painelProcessos">
       <div class="card">
         <h2>📚 Processos de atendimento</h2>
@@ -386,7 +321,7 @@
       </div>
     </div>
 
-    <!-- ===== PAINEL COMUNICADOS ===== -->
+    <!-- COMUNICADOS -->
     <div class="painel" id="painelComunicados">
       <div class="card" id="cardNovoComunicado" style="display:none;">
         <h2>📢 Novo comunicado</h2>
@@ -422,7 +357,7 @@
       </div>
     </div>
 
-    <!-- ===== PAINEL GESTÃO ===== -->
+    <!-- GESTÃO -->
     <div class="painel" id="painelGestao">
       <div class="card">
         <h2>🔌 Conexão com a planilha</h2>
@@ -474,83 +409,42 @@
   </div>
 </div>
 
-<!-- MODAL: AVALIAÇÃO COMPLETA -->
+<!-- MODAL AVALIAÇÃO -->
 <div class="modal-overlay" id="modalAvaliacao" onclick="fecharModal(event,'modalAvaliacao')">
   <div class="modal-box">
-    <div class="modal-header">
-      <h2>📄 Avaliação completa</h2>
-      <button class="btn-fechar" onclick="fecharModalBox('modalAvaliacao')">✕</button>
-    </div>
+    <div class="modal-header"><h2>📄 Avaliação completa</h2><button class="btn-fechar" onclick="fecharModalBox('modalAvaliacao')">✕</button></div>
     <div class="modal-body" id="modalAvaliacaoBody"></div>
   </div>
 </div>
 
-<!-- MODAL: CONTESTAÇÃO -->
+<!-- MODAL CONTESTAÇÃO -->
 <div class="modal-overlay" id="modalContestacao" onclick="fecharModal(event,'modalContestacao')">
   <div class="modal-box">
-    <div class="modal-header">
-      <h2>⚠️ Contestar avaliação</h2>
-      <button class="btn-fechar" onclick="fecharModalBox('modalContestacao')">✕</button>
-    </div>
+    <div class="modal-header"><h2>⚠️ Contestar avaliação</h2><button class="btn-fechar" onclick="fecharModalBox('modalContestacao')">✕</button></div>
     <div class="modal-body" id="modalContestacaoBody"></div>
   </div>
 </div>
 
-<!-- MODAL: VISUALIZAR PROCESSO -->
+<!-- MODAL PROCESSO -->
 <div class="modal-overlay" id="modalProcesso" onclick="fecharModal(event,'modalProcesso')">
   <div class="modal-box">
-    <div class="modal-header">
-      <h2>📋 Orientação completa do processo</h2>
-      <button class="btn-fechar" onclick="fecharModalBox('modalProcesso')">✕</button>
-    </div>
+    <div class="modal-header"><h2>📋 Orientação completa do processo</h2><button class="btn-fechar" onclick="fecharModalBox('modalProcesso')">✕</button></div>
     <div class="modal-body" id="modalProcessoBody"></div>
   </div>
 </div>
 
-<!-- MODAL: NOVO / EDITAR PROCESSO -->
+<!-- MODAL FORM PROCESSO -->
 <div class="modal-overlay" id="modalProcessoForm" onclick="fecharModal(event,'modalProcessoForm')">
   <div class="modal-box">
-    <div class="modal-header">
-      <h2 id="tituloFormProcesso">➕ Novo processo</h2>
-      <button class="btn-fechar" onclick="fecharModalBox('modalProcessoForm')">✕</button>
-    </div>
+    <div class="modal-header"><h2 id="tituloFormProcesso">➕ Novo processo</h2><button class="btn-fechar" onclick="fecharModalBox('modalProcessoForm')">✕</button></div>
     <div class="modal-body">
       <div class="grid2">
-        <div class="campo">
-          <label>📌 Título do processo *</label>
-          <input type="text" id="procTitulo" placeholder="ex: Atendimento inicial no WhatsApp">
-        </div>
-        <div class="campo">
-          <label>🏷️ Categoria *</label>
-          <select id="procCategoria">
-            <option value="Atendimento">Atendimento</option>
-            <option value="Follow-up">Follow-up</option>
-            <option value="Pós-venda">Pós-venda</option>
-            <option value="Registro">Registro / Cadastro</option>
-            <option value="Comercial">Comercial (pedido/frete)</option>
-            <option value="Outro">Outro</option>
-          </select>
-        </div>
-        <div class="campo">
-          <label>🧑‍💼 Responsável</label>
-          <input type="text" id="procResponsavel" placeholder="Nome do responsável">
-        </div>
-        <div class="campo">
-          <label>📊 Status</label>
-          <select id="procStatus">
-            <option value="Em uso">Em uso</option>
-            <option value="Em revisão">Em revisão</option>
-            <option value="Arquivado">Arquivado</option>
-          </select>
-        </div>
-        <div class="campo" style="grid-column:1/-1;">
-          <label>📝 Descrição do processo *</label>
-          <textarea id="procDescricao" rows="3" placeholder="O que este processo cobre e para quem serve..."></textarea>
-        </div>
-        <div class="campo" style="grid-column:1/-1;">
-          <label>🔢 Etapas do processo (uma por linha) *</label>
-          <textarea id="procEtapas" rows="6" placeholder="1. Cumprimentar e se identificar&#10;2. Identificar se é estúdio/revendedor&#10;3. ..."></textarea>
-        </div>
+        <div class="campo"><label>📌 Título do processo *</label><input type="text" id="procTitulo" placeholder="ex: Atendimento inicial no WhatsApp"></div>
+        <div class="campo"><label>🏷️ Categoria *</label><select id="procCategoria"><option value="Atendimento">Atendimento</option><option value="Follow-up">Follow-up</option><option value="Pós-venda">Pós-venda</option><option value="Registro">Registro / Cadastro</option><option value="Comercial">Comercial (pedido/frete)</option><option value="Outro">Outro</option></select></div>
+        <div class="campo"><label>🧑‍💼 Responsável</label><input type="text" id="procResponsavel" placeholder="Nome do responsável"></div>
+        <div class="campo"><label>📊 Status</label><select id="procStatus"><option value="Em uso">Em uso</option><option value="Em revisão">Em revisão</option><option value="Arquivado">Arquivado</option></select></div>
+        <div class="campo" style="grid-column:1/-1;"><label>📝 Descrição do processo *</label><textarea id="procDescricao" rows="3" placeholder="O que este processo cobre e para quem serve..."></textarea></div>
+        <div class="campo" style="grid-column:1/-1;"><label>🔢 Etapas do processo (uma por linha) *</label><textarea id="procEtapas" rows="6" placeholder="1. Cumprimentar e se identificar&#10;2. Identificar se é estúdio/revendedor&#10;3. ..."></textarea></div>
       </div>
       <div style="display:flex; gap:10px; margin-top:12px;">
         <button class="btn btn-primario" style="flex:1;" onclick="salvarProcesso()">💾 Salvar</button>
@@ -560,24 +454,18 @@
   </div>
 </div>
 
-<!-- MODAL: COMUNICADO COMPLETO -->
+<!-- MODAL COMUNICADO -->
 <div class="modal-overlay" id="modalComunicado" onclick="fecharModal(event,'modalComunicado')">
   <div class="modal-box">
-    <div class="modal-header">
-      <h2>📢 Comunicado</h2>
-      <button class="btn-fechar" onclick="fecharModalBox('modalComunicado')">✕</button>
-    </div>
+    <div class="modal-header"><h2>📢 Comunicado</h2><button class="btn-fechar" onclick="fecharModalBox('modalComunicado')">✕</button></div>
     <div class="modal-body" id="modalComunicadoBody"></div>
   </div>
 </div>
 
-<!-- MODAL: ENTRADA DE TEXTO -->
+<!-- MODAL ENTRADA -->
 <div class="modal-overlay" id="modalInput" onclick="fecharModal(event,'modalInput')">
   <div class="modal-box" style="max-width:520px;">
-    <div class="modal-header">
-      <h2 id="modalInputTitulo">Entrada</h2>
-      <button class="btn-fechar" onclick="fecharModalBox('modalInput')">✕</button>
-    </div>
+    <div class="modal-header"><h2 id="modalInputTitulo">Entrada</h2><button class="btn-fechar" onclick="fecharModalBox('modalInput')">✕</button></div>
     <div class="modal-body">
       <p id="modalInputMsg" style="font-size:.85rem;color:var(--cinza);margin-bottom:12px;"></p>
       <textarea id="modalInputTexto" rows="3" style="width:100%;padding:11px 13px;border:1.5px solid var(--borda);border-radius:10px;font-size:.9rem;font-family:'Inter',sans-serif;resize:vertical;"></textarea>
@@ -589,13 +477,10 @@
   </div>
 </div>
 
-<!-- MODAL: CONFIRMAÇÃO -->
+<!-- MODAL CONFIRMAÇÃO -->
 <div class="modal-overlay" id="modalConfirm" onclick="fecharModal(event,'modalConfirm')">
   <div class="modal-box" style="max-width:460px;">
-    <div class="modal-header">
-      <h2>⚠️ Confirmação</h2>
-      <button class="btn-fechar" onclick="fecharModalBox('modalConfirm')">✕</button>
-    </div>
+    <div class="modal-header"><h2>⚠️ Confirmação</h2><button class="btn-fechar" onclick="fecharModalBox('modalConfirm')">✕</button></div>
     <div class="modal-body">
       <p id="modalConfirmMsg" style="font-size:.9rem;color:#374151;line-height:1.55;"></p>
       <div style="display:flex;gap:10px;margin-top:16px;">
@@ -607,27 +492,13 @@
 </div>
 
 <script>
-/* =========================================================
-   VERSÃO FINAL CORRIGIDA — CORS APPS SCRIPT
-   URL já fixada + função api() com Content-Type text/plain
-========================================================= */
-console.log('Monitoria Infinity — versão final (planilha conectada)');
-
-/* =========================================================
-   CONFIGURAÇÃO — URL DO APPS SCRIPT (fixada)
-========================================================= */
+/* ============ CONFIGURAÇÃO ============ */
 const URL_PADRAO_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxauSdEPa3xfMJPh_b0YbqbUeetRVKc9q_V9-gLOcCa86SoWY13vS6b3tAvkttZUXef/exec';
 let URL_APPS_SCRIPT = carregar('inf_script_url', URL_PADRAO_APPS_SCRIPT);
 
 function byId(id){ return document.getElementById(id); }
+function modoPlanilha(){ return typeof URL_APPS_SCRIPT === 'string' && URL_APPS_SCRIPT.trim().startsWith('https://'); }
 
-function modoPlanilha(){
-  return typeof URL_APPS_SCRIPT === 'string' && URL_APPS_SCRIPT.trim().startsWith('https://');
-}
-
-/* =========================================================
-   BANCO (produção: Apps Script | fallback: navegador)
-========================================================= */
 const CHAVE_AVAL = 'inf_avaliacoes';
 const CHAVE_PROC = 'inf_processos';
 const CHAVE_USER = 'inf_usuarios';
@@ -660,9 +531,7 @@ function fmtData(iso){
   return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
 }
 
-/* =========================================================
-   FUSO HORÁRIO — data/hora no fuso escolhido (padrão Brasília)
-========================================================= */
+/* ============ FUSO HORÁRIO ============ */
 function dataHoraNoFuso(tz){
   tz = tz || 'America/Sao_Paulo';
   try{
@@ -701,33 +570,30 @@ function mudarFuso(){
   toastSucesso('Fuso atualizado: ' + rotuloFuso(fusoSelecionado));
 }
 
-/* =========================================================
-   API — conversa com o Apps Script (CORRIGIDA: CORS)
-   Content-Type text/plain evita o "preflight" do navegador
-   que fazia o Google devolver HTML no lugar do JSON.
-========================================================= */
+/* ============ API — conversa com o Apps Script ============ */
 async function api(acao, dados = {}){
   if(!modoPlanilha()) return { ok:false, demo:true };
   try{
-    const r = await fetch(URL_APPS_SCRIPT.trim('https://script.google.com/macros/s/AKfycbxauSdEPa3xfMJPh_b0YbqbUeetRVKc9q_V9-gLOcCa86SoWY13vS6b3tAvkttZUXef/exec'), {
+    const r = await fetch(URL_APPS_SCRIPT.trim(), {
       method:'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({ acao, ...dados })
     });
     const texto = await r.text();
-    try { return JSON.parse(texto); }
-    catch(e){
-      console.error('Resposta não-JSON:', texto.slice(0,200));
+    try {
+      return JSON.parse(texto);
+    } catch(e){
+      console.error('Resposta não-JSON (veio HTML):', texto.slice(0,200));
+      toastErro('A planilha retornou uma resposta inválida. Reimplante o Apps Script (Implantar → Nova implantação) e tente de novo.');
       return { ok:false, erro:'Resposta inválida da planilha' };
     }
   }catch(e){
+    toastErro('Falha ao conectar com a planilha: ' + e.message);
     return { ok:false, erro:String(e) };
   }
 }
 
-/* =========================================================
-   CAMADA DE DADOS — avaliações
-========================================================= */
+/* ============ DADOS — avaliações ============ */
 async function obterAvaliacoes(){
   let lista = [];
   if(modoPlanilha()){
@@ -754,9 +620,7 @@ async function removerAvaliacao(id){
   else { salvar(CHAVE_AVAL, carregar(CHAVE_AVAL, []).filter(x => x.id !== id)); }
 }
 
-/* =========================================================
-   CAMADA DE DADOS — processos
-========================================================= */
+/* ============ DADOS — processos ============ */
 async function obterProcessos(){
   let lista = [];
   if(modoPlanilha()){
@@ -782,9 +646,7 @@ async function removerProcesso(id){
   else { salvar(CHAVE_PROC, carregar(CHAVE_PROC, []).filter(x => x.id !== id)); }
 }
 
-/* =========================================================
-   CAMADA DE DADOS — usuários
-========================================================= */
+/* ============ DADOS — usuários ============ */
 async function obterUsuarios(){
   if(modoPlanilha()){
     const r = await api('listarUsuarios');
@@ -807,9 +669,7 @@ async function removerUsuario(login){
   else { salvar(CHAVE_USER, carregar(CHAVE_USER, USUARIOS_DEMO).filter(x => x.login !== login)); }
 }
 
-/* =========================================================
-   CAMADA DE DADOS — comunicados
-========================================================= */
+/* ============ DADOS — comunicados ============ */
 async function obterComunicados(){
   let lista = [];
   if(modoPlanilha()){
@@ -838,9 +698,7 @@ async function marcarLidoBackend(id){
   }
 }
 
-/* =========================================================
-   TOASTS
-========================================================= */
+/* ============ TOASTS ============ */
 function showToast(tipo, msg){
   const icones = { success:'✅', error:'⚠️', info:'💡' };
   const box = byId('toastContainer');
@@ -855,9 +713,7 @@ function toastSucesso(msg){ showToast('success', msg); }
 function toastErro(msg){ showToast('error', msg); }
 function toastInfo(msg){ showToast('info', msg); }
 
-/* =========================================================
-   MODAL DE ENTRADA (substitui o prompt())
-========================================================= */
+/* ============ MODAL ENTRADA ============ */
 function modalPrompt(titulo, msg, placeholder, callback, obrigatorio){
   const t = byId('modalInputTitulo'); if(t) t.textContent = titulo;
   const m = byId('modalInputMsg'); if(m) m.textContent = msg;
@@ -882,9 +738,7 @@ function confirmarModalInput(){
   if(cb) cb(val);
 }
 
-/* =========================================================
-   MODAL DE CONFIRMAÇÃO (substitui o confirm())
-========================================================= */
+/* ============ MODAL CONFIRMAÇÃO ============ */
 function modalConfirm(msg, callback){
   const m = byId('modalConfirmMsg'); if(m) m.textContent = msg;
   modalConfirmCallback = callback;
@@ -896,16 +750,12 @@ function confirmarModalConfirm(){
   if(cb) cb(true);
 }
 
-/* =========================================================
-   ESTADOS VAZIOS
-========================================================= */
+/* ============ ESTADOS VAZIOS ============ */
 function vazioHTML(icone, titulo, dica){
   return `<div class="vazio-estado"><div class="v-icone">${icone}</div><div class="v-titulo">${titulo}</div><div class="v-dica">${dica}</div></div>`;
 }
 
-/* =========================================================
-   CATEGORIAS E QUESTÕES (ponderação 100 pts)
-========================================================= */
+/* ============ CATEGORIAS E QUESTÕES ============ */
 const CATEGORIAS = [
   { nome:'🟢 Condução', peso:20, cor:'#12705E' },
   { nome:'🔵 Processo', peso:30, cor:'#1D4ED8' },
@@ -938,7 +788,6 @@ function garantirQuestoes(){
     questoes = QUESTOES_PADRAO.slice();
   }
 }
-
 function valorMaxQuestao(idx){
   const cat = questoes[idx].cat;
   const qtd = questoes.filter(q => q.cat === cat).length;
@@ -950,9 +799,7 @@ function valorMaxDe(r){
   return i >= 0 ? Math.round(valorMaxQuestao(i) * 100) / 100 : 0;
 }
 
-/* =========================================================
-   CAMPO CONTATO DINÂMICO (número WhatsApp OU @Instagram)
-========================================================= */
+/* ============ CAMPO CONTATO DINÂMICO ============ */
 function atualizarCampoContato(){
   const canalEl = byId('canalContato');
   const canal = canalEl ? canalEl.value : 'WhatsApp';
@@ -970,9 +817,7 @@ function atualizarCampoContato(){
   }
 }
 
-/* =========================================================
-   CONEXÃO COM A PLANILHA (aba Gestão)
-========================================================= */
+/* ============ CONEXÃO COM A PLANILHA ============ */
 function atualizarStatusConexao(){
   const st = byId('statusConexao');
   if(!st) return;
@@ -995,9 +840,7 @@ function salvarConexao(){
   toastSucesso('Conexão salva! O sistema agora grava na planilha.');
 }
 
-/* =========================================================
-   LOGIN
-========================================================= */
+/* ============ LOGIN ============ */
 async function autenticar(login, senha){
   if(modoPlanilha()){
     const r = await api('login', { login, senha });
@@ -1085,9 +928,7 @@ function trocarGuia(el){
   if(el.dataset.painel === 'painelComunicados'){ renderComunicados(); atualizarBadgeComunicados(); }
 }
 
-/* =========================================================
-   LISTA SUSPENSA DE ATENDENTES
-========================================================= */
+/* ============ LISTA DE ATENDENTES ============ */
 function renderAvaliados(){
   const sel = byId('avaliado');
   if(!sel) return;
@@ -1099,9 +940,7 @@ function renderAvaliados(){
   sel.innerHTML = html;
 }
 
-/* =========================================================
-   QUESTÕES (formulário) — RENDERIZAÇÃO PROTEGIDA
-========================================================= */
+/* ============ QUESTÕES — FORMULÁRIO ============ */
 function renderQuestoes(){
   const wrapper = byId('listaQuestoes');
   if(!wrapper) return;
@@ -1141,20 +980,17 @@ function renderQuestoes(){
       'Erro: ' + String(e && e.message || e) + '. Recarregue a página (Ctrl+F5).');
   }
 }
-
 function sliderPreenche(el){
   if(!el) return;
   const min = Number(el.min) || 0, max = Number(el.max) || 10;
   const pct = ((Number(el.value) - min) / (max - min)) * 100;
   el.style.setProperty('--val', pct + '%');
 }
-
 function atualizarNota(i){
   const n = byId('nota'+i); if(n) n.textContent = byId('q'+i).value;
   sliderPreenche(byId('q'+i));
   calcularTotal();
 }
-
 function calcularTotal(){
   garantirQuestoes();
   let total = 0;
@@ -1172,9 +1008,7 @@ function calcularTotal(){
   else { c.textContent = 'Crítico'; c.style.background = '#DC2626'; }
 }
 
-/* =========================================================
-   ENVIO DA AVALIAÇÃO
-========================================================= */
+/* ============ ENVIO DA AVALIAÇÃO ============ */
 async function enviarAvaliacao(){
   if(sessao.perfil === 'Atendente'){ toastErro('O atendente não pontua avaliações.'); return; }
   const contato = byId('contatoCliente').value.trim();
@@ -1235,9 +1069,7 @@ function limparFormulario(){
   calcularTotal();
 }
 
-/* =========================================================
-   LISTA DE AVALIAÇÕES — filtrada por perfil
-========================================================= */
+/* ============ LISTA DE AVALIAÇÕES ============ */
 function avaliacoesVisiveis(){
   const avals = cacheAvaliacoes;
   if(!sessao) return [];
@@ -1297,7 +1129,6 @@ async function renderAvaliacoes(){
       </div>`;
   }).join('');
 }
-
 function statusLabel(s){
   if(s === 'Pendente') return 'Pendente';
   if(s === 'Aceita') return 'Aceita';
@@ -1312,7 +1143,7 @@ function statusClass(s){
   return 'status-contestacao-aceita';
 }
 
-/* ===== MODAL DA AVALIAÇÃO ===== */
+/* ============ MODAL DA AVALIAÇÃO ============ */
 function abrirAvaliacao(id){
   const a = cacheAvaliacoes.find(x => x.id === id);
   if(!a) return;
@@ -1398,7 +1229,6 @@ function abrirAvaliacao(id){
   const body = byId('modalAvaliacaoBody');
   if(body){ body.innerHTML = html; abrirModalBox('modalAvaliacao'); }
 }
-
 function acaoLabel(a){
   if(a === 'enviada') return '📤 Avaliação enviada';
   if(a === 'aceita') return '✅ Aceita pelo atendente';
@@ -1408,7 +1238,7 @@ function acaoLabel(a){
   return a;
 }
 
-/* ===== AÇÕES DO FLUXO ===== */
+/* ============ AÇÕES DO FLUXO ============ */
 function aceitarAvaliacao(id){
   modalPrompt('✅ Aceitar avaliação', 'Quer registrar um feedback sobre esta avaliação? (opcional)', 'Escreva seu feedback aqui...', async (feedback) => {
     const aval = cacheAvaliacoes.find(x => x.id === id);
@@ -1479,7 +1309,6 @@ function contestarAvaliacao(id){
   const body = byId('modalContestacaoBody');
   if(body){ body.innerHTML = html; abrirModalBox('modalContestacao'); }
 }
-
 function toggleJustificativa(idx){
   const chk = document.querySelector('.chk-contestar[data-idx="' + idx + '"]');
   const just = byId('just' + idx);
@@ -1488,7 +1317,6 @@ function toggleJustificativa(idx){
     if(!chk.checked){ const ta = byId('justificativa' + idx); if(ta) ta.value = ''; }
   }
 }
-
 async function confirmarContestacao(id){
   const aval = cacheAvaliacoes.find(x => x.id === id);
   if(!aval) return;
@@ -1533,7 +1361,6 @@ async function confirmarContestacao(id){
   await atualizarBadgeComunicados();
   toastSucesso('Contestação enviada! ADM e avaliador serão notificados.');
 }
-
 async function decidirContestacao(id, aceitar){
   const aval = cacheAvaliacoes.find(x => x.id === id);
   if(!aval) return;
@@ -1557,7 +1384,6 @@ async function decidirContestacao(id, aceitar){
   await atualizarBadgeComunicados();
   toastSucesso(aceitar ? 'Contestação aceita!' : 'Avaliação mantida.');
 }
-
 function excluirAvaliacao(id){
   const aval = cacheAvaliacoes.find(x => x.id === id);
   if(!aval) return;
@@ -1571,9 +1397,7 @@ function excluirAvaliacao(id){
   });
 }
 
-/* =========================================================
-   PROCESSOS
-========================================================= */
+/* ============ PROCESSOS ============ */
 function abrirFormProcesso(id){
   if(sessao.perfil === 'Atendente'){ toastErro('O atendente pode consultar os processos, mas não cadastrar ou editar.'); return; }
   processoEditandoId = id || null;
@@ -1587,7 +1411,6 @@ function abrirFormProcesso(id){
   const pEtap = byId('procEtapas'); if(pEtap) pEtap.value = p ? p.etapas : '';
   abrirModalBox('modalProcessoForm');
 }
-
 async function salvarProcesso(){
   const titulo = byId('procTitulo').value.trim();
   const descricao = byId('procDescricao').value.trim();
@@ -1632,7 +1455,6 @@ async function salvarProcesso(){
   toastSucesso(editando ? 'Processo atualizado! Comunicado enviado a todos.' : 'Processo registrado! Comunicado enviado a todos.');
   processoEditandoId = null;
 }
-
 async function renderProcessos(){
   await obterProcessos();
   const busca = (byId('buscaProcesso')?.value || '').trim().toLowerCase();
@@ -1667,7 +1489,6 @@ async function renderProcessos(){
     </div>`;
   }).join('');
 }
-
 function abrirProcesso(id){
   const p = cacheProcessos.find(x => x.id === id);
   if(!p) return;
@@ -1697,7 +1518,6 @@ function abrirProcesso(id){
   const body = byId('modalProcessoBody');
   if(body){ body.innerHTML = html; abrirModalBox('modalProcesso'); }
 }
-
 function excluirProcesso(id){
   modalConfirm('Excluir este processo?', async () => {
     await removerProcesso(id);
@@ -1706,9 +1526,7 @@ function excluirProcesso(id){
   });
 }
 
-/* =========================================================
-   COMUNICADOS
-========================================================= */
+/* ============ COMUNICADOS ============ */
 function todosLogins(){ return (usuarios || []).map(u => u.login); }
 function destinatariosDe(perfis, logins){
   const set = new Set(logins || []);
@@ -1752,7 +1570,6 @@ async function criarComunicado(){
   await atualizarBadgeComunicados();
   toastSucesso('Comunicado publicado!');
 }
-
 async function renderComunicados(){
   await obterComunicados();
   const coms = cacheComunicados.filter(c => (c.destinatarios || []).includes(sessao.login));
@@ -1780,7 +1597,6 @@ async function renderComunicados(){
     </div>`;
   }).join('');
 }
-
 async function abrirComunicado(id){
   const c = cacheComunicados.find(x => x.id === id);
   if(!c) return;
@@ -1809,7 +1625,6 @@ async function abrirComunicado(id){
   const body = byId('modalComunicadoBody');
   if(body){ body.innerHTML = html; abrirModalBox('modalComunicado'); }
 }
-
 function excluirComunicado(id){
   if(sessao.perfil !== 'ADM'){ toastErro('Somente ADM pode excluir comunicados.'); return; }
   modalConfirm('Excluir este comunicado?', async () => {
@@ -1820,16 +1635,13 @@ function excluirComunicado(id){
     toastSucesso('Comunicado excluído.');
   });
 }
-
 async function marcarComunicadoLido(id){
   await marcarLidoBackend(id);
   await renderComunicados();
   await atualizarBadgeComunicados();
 }
 
-/* =========================================================
-   DASHBOARD
-========================================================= */
+/* ============ DASHBOARD ============ */
 function togglePeriodo(){
   const f = byId('filtroDash').value;
   const ci = byId('campoInicio'); if(ci) ci.style.display = f === 'periodo' ? 'block' : 'none';
@@ -1851,7 +1663,6 @@ function obterPeriodo(){
   return { inicio, fim };
 }
 function subDias(d, n){ const x = new Date(d); x.setDate(x.getDate() - n); return x; }
-
 async function renderDashboard(){
   await obterAvaliacoes();
   const { inicio, fim } = obterPeriodo();
@@ -1948,9 +1759,7 @@ function inicioSemana(d){
   const x = new Date(d); const dia = (x.getDay() + 6) % 7; x.setDate(x.getDate() - dia); x.setHours(0,0,0,0); return x;
 }
 
-/* =========================================================
-   GESTÃO (SÓ ADM)
-========================================================= */
+/* ============ GESTÃO (SÓ ADM) ============ */
 function renderUsuarios(){
   const div = byId('listaUsuarios');
   if(!div) return;
@@ -2044,9 +1853,7 @@ function excluirQuestao(i){
   });
 }
 
-/* =========================================================
-   LIMPEZA DE DADOS DE TESTE
-========================================================= */
+/* ============ LIMPEZA DE DADOS DE TESTE ============ */
 function limparDadosTeste(){
   if(modoPlanilha()){
     toastErro('Em modo planilha os dados ficam no Google Sheets. Para apagar tudo, edite a planilha diretamente.');
@@ -2061,9 +1868,7 @@ function limparDadosTeste(){
   });
 }
 
-/* =========================================================
-   MODAIS
-========================================================= */
+/* ============ MODAIS ============ */
 function abrirModalBox(id){ const el = byId(id); if(el) el.classList.add('aberto'); }
 function fecharModalBox(id){ const el = byId(id); if(el) el.classList.remove('aberto'); }
 function fecharModal(ev, id){ if(ev.target === ev.currentTarget) fecharModalBox(id); }
