@@ -722,7 +722,9 @@ async function obterComunicados(){
   } else {
     lista = carregar(CHAVE_COM, []);
   }
-  cacheComunicados = Array.isArray(lista) ? lista : [];
+  /* CORREÇÃO: garante mais recentes no topo */
+  lista = (Array.isArray(lista) ? lista : []).sort((a, b) => new Date(b.data) - new Date(a.data));
+  cacheComunicados = lista;
   return cacheComunicados;
 }
 async function gravarComunicado(c){
@@ -1661,7 +1663,10 @@ async function enviarArquivosArte(files){
       const b64 = await lerArquivoBase64(f);
       const r = await api('uploadArquivo', { nome: f.name, mime: f.type || 'application/octet-stream', base64: b64 });
       if(r && r.ok && r.anexo){ anexos.push(r.anexo); }
-      else { toastErro('Não foi possível enviar ' + f.name + '.'); }
+      else {
+        /* CORREÇÃO: mostra o motivo real do erro do servidor */
+        toastErro('Não foi possível enviar ' + f.name + (r && r.erro ? ': ' + r.erro : '') + '.');
+      }
     }catch(e){ toastErro('Falha ao enviar ' + f.name + ': ' + e.message); }
   }
   return anexos;
@@ -1691,7 +1696,10 @@ async function criarComunicado(){
 }
 async function renderComunicados(){
   await obterComunicados();
-  const coms = cacheComunicados.filter(c => (c.destinatarios || []).includes(sessao.login));
+  /* CORREÇÃO: ordena novamente do mais recente para o mais antigo */
+  const coms = cacheComunicados
+    .filter(c => (c.destinatarios || []).includes(sessao.login))
+    .sort((a, b) => new Date(b.data) - new Date(a.data));
   const div = byId('listaComunicados');
   if(!div) return;
   if(!coms.length){
