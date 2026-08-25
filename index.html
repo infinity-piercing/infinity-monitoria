@@ -145,6 +145,20 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
 .comunicado .c-resumo{font-size:.76rem;color:var(--cinza);font-style:italic;}
 .comunicado .c-rodape{display:flex;justify-content:space-between;align-items:center;margin-top:9px;flex-wrap:wrap;gap:8px;}
 .nao-lido-flag{background:var(--vermelho);color:#fff;font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:10px;}
+/* ===== EDITOR DE TEXTO (descrição de processos) ===== */
+.editor-toolbar{display:flex;gap:6px;border:1.5px solid var(--borda);border-bottom:none;border-radius:10px 10px 0 0;padding:6px 8px;background:#F7FAF9;}
+.editor-toolbar button{width:34px;height:30px;border:1px solid var(--borda);background:#fff;border-radius:7px;cursor:pointer;font-size:.85rem;color:var(--verde-escuro);line-height:1;font-family:'Inter',sans-serif;}
+.editor-toolbar button:hover{background:#E6F4F0;border-color:var(--verde-claro);}
+.editor-area{width:100%;min-height:84px;border:1.5px solid var(--borda);border-radius:0 0 10px 10px;padding:11px 13px;font-size:.9rem;font-family:'Inter',sans-serif;line-height:1.6;outline:none;background:#fff;transition:border-color .15s,box-shadow .15s;overflow-y:auto;}
+.editor-area:focus{border-color:var(--verde-claro);box-shadow:0 0 0 3px rgba(18,112,94,.15);}
+.editor-area[contenteditable]:empty::before{content:attr(data-placeholder);color:#9CA3AF;pointer-events:none;}
+.editor-area b{font-weight:700;}
+.editor-area i{font-style:italic;}
+.editor-area mark{background:#FFF176;padding:0 2px;border-radius:3px;}
+.descricao-html{font-size:.85rem;background:#F7FAF9;padding:13px;border-radius:10px;line-height:1.6;word-break:break-word;}
+.descricao-html b{font-weight:700;}
+.descricao-html i{font-style:italic;}
+.descricao-html mark{background:#FFF176;padding:0 2px;border-radius:3px;}
 @media (max-width:760px){.grid2,.grid3,.grid4{grid-template-columns:1fr;}.nav-guias{padding:0 10px;}.guia{padding:12px 12px;font-size:.8rem;}}
 </style>
 </head>
@@ -343,6 +357,12 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
             <label>📝 Mensagem *</label>
             <textarea id="comMensagem" rows="3" placeholder="Escreva a mensagem..."></textarea>
           </div>
+          <div class="campo" style="grid-column:1/-1;">
+            <label>📎 Anexos (artes, PDFs, documentos) <span style="font-weight:400;color:var(--cinza);font-size:.68rem;">— máx. 5MB por arquivo</span></label>
+            <input type="file" id="comArquivos" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" onchange="atualizarListaArquivosCom()">
+            <div class="dica-senha">Envie artes e arquivos de apoio. Eles ficam no Google Drive e aparecem junto ao comunicado para o time.</div>
+            <div id="listaArquivosCom" style="margin-top:8px;"></div>
+          </div>
         </div>
         <div style="display:flex; gap:10px;">
           <button class="btn btn-primario" style="flex:1;" onclick="criarComunicado()">📤 Publicar</button>
@@ -443,7 +463,16 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
         <div class="campo"><label>🏷️ Categoria *</label><select id="procCategoria"><option value="Atendimento">Atendimento</option><option value="Follow-up">Follow-up</option><option value="Pós-venda">Pós-venda</option><option value="Registro">Registro / Cadastro</option><option value="Comercial">Comercial (pedido/frete)</option><option value="Outro">Outro</option></select></div>
         <div class="campo"><label>🧑‍💼 Responsável</label><input type="text" id="procResponsavel" placeholder="Nome do responsável"></div>
         <div class="campo"><label>📊 Status</label><select id="procStatus"><option value="Em uso">Em uso</option><option value="Em revisão">Em revisão</option><option value="Arquivado">Arquivado</option></select></div>
-        <div class="campo" style="grid-column:1/-1;"><label>📝 Descrição do processo *</label><textarea id="procDescricao" rows="3" placeholder="O que este processo cobre e para quem serve..."></textarea></div>
+        <div class="campo" style="grid-column:1/-1;">
+          <label>📝 Descrição do processo *</label>
+          <div class="editor-toolbar">
+            <button type="button" onmousedown="event.preventDefault()" onclick="execEditorCmd('bold')" title="Negrito"><b>B</b></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="execEditorCmd('italic')" title="Itálico"><i>I</i></button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="execEditorCmd('hiliteColor','#FFF176')" title="Grifar (marca-texto)"><span style="background:#FFF176;padding:1px 6px;border-radius:3px;font-weight:700;">G</span></button>
+          </div>
+          <div class="editor-area" id="procDescricao" contenteditable="true" data-placeholder="O que este processo cobre e para quem serve..."></div>
+          <div class="dica-senha">Dica: selecione o texto e use B (negrito), I (itálico) ou G (grifado). Enter quebra linha; Enter duplo cria linha em branco.</div>
+        </div>
         <div class="campo" style="grid-column:1/-1;"><label>🔢 Etapas do processo (uma por linha) *</label><textarea id="procEtapas" rows="6" placeholder="1. Cumprimentar e se identificar&#10;2. Identificar se é estúdio/revendedor&#10;3. ..."></textarea></div>
       </div>
       <div style="display:flex; gap:10px; margin-top:12px;">
@@ -582,7 +611,8 @@ async function api(acao, dados = {}){
     const texto = await r.text();
     try {
       return JSON.parse(texto);
-    } catch(e){
+    } 
+      } catch(e){
       console.error('Resposta não-JSON (veio HTML):', texto.slice(0,200));
       toastErro('A planilha retornou uma resposta inválida. Reimplante o Apps Script (Implantar → Nova implantação) e tente de novo.');
       return { ok:false, erro:'Resposta inválida da planilha' };
@@ -1401,6 +1431,23 @@ function excluirAvaliacao(id){
   });
 }
 
+/* ============ EDITOR DE TEXTO (descrição de processos) ============ */
+function execEditorCmd(cmd, value){
+  const editor = byId('procDescricao');
+  if(!editor) return;
+  editor.focus();
+  document.execCommand(cmd, false, value || null);
+}
+function stripHTML(html){
+  const t = document.createElement('div');
+  t.innerHTML = html || '';
+  return (t.textContent || t.innerText || '').trim();
+}
+function resumirHTML(html, max){
+  const texto = stripHTML(html);
+  return texto.length > max ? texto.slice(0, max) + '…' : texto;
+}
+
 /* ============ PROCESSOS ============ */
 function abrirFormProcesso(id){
   if(sessao.perfil === 'Atendente'){ toastErro('O atendente pode consultar os processos, mas não cadastrar ou editar.'); return; }
@@ -1411,15 +1458,15 @@ function abrirFormProcesso(id){
   const pCat = byId('procCategoria'); if(pCat) pCat.value = p ? p.categoria : 'Atendimento';
   const pSt = byId('procStatus'); if(pSt) pSt.value = p ? p.status : 'Em uso';
   const pResp = byId('procResponsavel'); if(pResp) pResp.value = p ? p.responsavel : sessao.nome;
-  const pDesc = byId('procDescricao'); if(pDesc) pDesc.value = p ? p.descricao : '';
+  const pDesc = byId('procDescricao'); if(pDesc) pDesc.innerHTML = p ? (p.descricao || '') : '';
   const pEtap = byId('procEtapas'); if(pEtap) pEtap.value = p ? p.etapas : '';
   abrirModalBox('modalProcessoForm');
 }
 async function salvarProcesso(){
   const titulo = byId('procTitulo').value.trim();
-  const descricao = byId('procDescricao').value.trim();
+  const descricao = byId('procDescricao').innerHTML.trim();
   const etapas = byId('procEtapas').value.trim();
-  if(!titulo || !descricao || !etapas){ toastErro('Preencha título, descrição e etapas do processo.'); return; }
+  if(!titulo || !stripHTML(descricao) || !etapas){ toastErro('Preencha título, descrição e etapas do processo.'); return; }
   const editando = processoEditandoId;
   let p = null;
   if(editando){
@@ -1464,7 +1511,7 @@ async function renderProcessos(){
   const busca = (byId('buscaProcesso')?.value || '').trim().toLowerCase();
   let procs = cacheProcessos;
   if(busca){
-    procs = procs.filter(p => (p.titulo + ' ' + p.categoria + ' ' + p.descricao + ' ' + p.etapas + ' ' + p.status + ' ' + p.responsavel).toLowerCase().includes(busca));
+    procs = procs.filter(p => (p.titulo + ' ' + p.categoria + ' ' + stripHTML(p.descricao) + ' ' + p.etapas + ' ' + p.status + ' ' + p.responsavel).toLowerCase().includes(busca));
   }
   const div = byId('listaProcessos');
   if(!div) return;
@@ -1489,7 +1536,7 @@ async function renderProcessos(){
           <button class="btn-peq btn-vermelho" onclick="event.stopPropagation();excluirProcesso(${p.id})">🗑️ Excluir</button>
         </div>` : ''}
       </div>
-      <div style="font-size:.8rem;margin-top:9px;color:#374151;">${p.descricao}</div>
+      <div class="descricao-html" style="margin-top:9px;">${resumirHTML(p.descricao, 160)}</div>
     </div>`;
   }).join('');
 }
@@ -1515,7 +1562,7 @@ function abrirProcesso(id){
       <div class="meta">✏️ Última edição: ${p.editadoPor ? p.editadoPor + ' em ' + fmtData(p.editadoEm) : '—'}</div>
     </div>
     <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:11px 0;">📝 Descrição</h3>
-    <div style="font-size:.85rem;background:#F7FAF9;padding:13px;border-radius:10px;line-height:1.55;">${p.descricao}</div>
+    <div class="descricao-html">${p.descricao}</div>
     <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 8px;font-family:'Poppins',sans-serif;">🔢 Etapas / orientação completa</h3>
     <div style="font-size:.85rem;background:#F0FDF9;border:1px solid #CBE8E0;padding:15px;border-radius:10px;line-height:1.7;white-space:pre-line;">${p.etapas}</div>
     ${edicoes}`;
@@ -1537,8 +1584,8 @@ function destinatariosDe(perfis, logins){
   (perfis || []).forEach(p => (usuarios || []).forEach(u => { if(u.perfil === p) set.add(u.login); }));
   return [...set];
 }
-async function gerarComunicado(titulo, mensagem, destinatarios, tipo, refId){
-  const c = { id: Date.now(), titulo, mensagem, data: new Date().toISOString(), tipo, refId, destinatarios, lidoPor: [] };
+async function gerarComunicado(titulo, mensagem, destinatarios, tipo, refId, anexos){
+  const c = { id: Date.now(), titulo, mensagem, data: new Date().toISOString(), tipo, refId, destinatarios, lidoPor: [], anexos: anexos || [] };
   await gravarComunicado(c);
 }
 async function atualizarBadgeComunicados(){
@@ -1559,6 +1606,37 @@ function fecharNovoComunicado(){
   const card = byId('cardNovoComunicado'); if(card) card.style.display = 'none';
   const btn = byId('btnNovoComunicado'); if(btn) btn.style.display = 'inline-block';
 }
+/* ===== ANEXOS (artes e arquivos) ===== */
+function atualizarListaArquivosCom(){
+  const input = byId('comArquivos');
+  const div = byId('listaArquivosCom');
+  if(!input || !div) return;
+  const files = Array.from(input.files || []);
+  div.innerHTML = files.map(f =>
+    `<div style="font-size:.75rem;background:#F0FDF9;border:1px solid #CBE8E0;border-radius:8px;padding:6px 10px;margin-bottom:5px;display:flex;justify-content:space-between;gap:8px;"><span>📎 ${f.name}</span><span style="color:var(--cinza);white-space:nowrap;">${(f.size/1024).toFixed(0)} KB</span></div>`
+  ).join('') || '';
+}
+function lerArquivoBase64(file){
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1] || '');
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+async function enviarArquivosArte(files){
+  const anexos = [];
+  for(const f of files){
+    if(f.size > 5*1024*1024){ toastErro(f.name + ' tem mais de 5MB e foi ignorado.'); continue; }
+    try{
+      const b64 = await lerArquivoBase64(f);
+      const r = await api('uploadArquivo', { nome: f.name, mime: f.type || 'application/octet-stream', base64: b64 });
+      if(r && r.ok && r.anexo){ anexos.push(r.anexo); }
+      else { toastErro('Não foi possível enviar ' + f.name + '.'); }
+    }catch(e){ toastErro('Falha ao enviar ' + f.name + ': ' + e.message); }
+  }
+  return anexos;
+}
 async function criarComunicado(){
   const titulo = byId('comTitulo').value.trim();
   const mensagem = byId('comMensagem').value.trim();
@@ -1566,13 +1644,21 @@ async function criarComunicado(){
   const destino = byId('comDestino').value;
   let destinos = todosLogins();
   if(destino !== 'Todos') destinos = destinatariosDe([destino], []);
-  await gerarComunicado(titulo, mensagem, destinos, 'geral');
+  const inputArq = byId('comArquivos');
+  let anexos = [];
+  if(inputArq && inputArq.files && inputArq.files.length){
+    toastInfo('Enviando anexos...');
+    anexos = await enviarArquivosArte(Array.from(inputArq.files));
+  }
+  await gerarComunicado(titulo, mensagem, destinos, 'geral', null, anexos);
   const ct = byId('comTitulo'); if(ct) ct.value = '';
   const cm = byId('comMensagem'); if(cm) cm.value = '';
+  if(inputArq) inputArq.value = '';
+  const la = byId('listaArquivosCom'); if(la) la.innerHTML = '';
   fecharNovoComunicado();
   await renderComunicados();
   await atualizarBadgeComunicados();
-  toastSucesso('Comunicado publicado!');
+  toastSucesso(anexos.length ? 'Comunicado publicado com ' + anexos.length + ' anexo(s)!' : 'Comunicado publicado!');
 }
 async function renderComunicados(){
   await obterComunicados();
@@ -1586,13 +1672,14 @@ async function renderComunicados(){
   div.innerHTML = coms.map(c => {
     const naoLido = !(c.lidoPor || []).includes(sessao.login);
     const podeExcluir = sessao.perfil === 'ADM';
+    const anexosBadge = (c.anexos && c.anexos.length) ? `<span class="c-tipo" style="background:#EDE9FE;color:#6D28D9;">📎 ${c.anexos.length} anexo(s)</span>` : '';
     return `
     <div class="comunicado ${naoLido ? 'nao-lido' : ''}" onclick="abrirComunicado(${c.id})">
       <div class="c-top">
         <span class="c-titulo">${c.titulo} ${naoLido ? '<span class="nao-lido-flag">NOVO</span>' : ''}</span>
         <span class="c-data">${fmtData(c.data)}</span>
       </div>
-      <span class="c-tipo">${c.tipo === 'avaliacao' ? 'Avaliação' : c.tipo === 'processo' ? 'Processo' : 'Geral'}</span>
+      <span class="c-tipo">${c.tipo === 'avaliacao' ? 'Avaliação' : c.tipo === 'processo' ? 'Processo' : 'Geral'}</span>${anexosBadge}
       <div class="c-msg">${c.mensagem.length > 160 ? c.mensagem.slice(0,160) + '…' : c.mensagem}</div>
       <div class="c-rodape">
         <span class="c-resumo">🔍 Clique para abrir o comunicado completo</span>
@@ -1609,6 +1696,14 @@ async function abrirComunicado(id){
   await atualizarBadgeComunicados();
 
   const qtdDest = (c.destinatarios || []).length;
+  let anexosHTML = '';
+  if(c.anexos && c.anexos.length){
+    anexosHTML = `<h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 8px;font-family:'Poppins',sans-serif;">📎 Anexos (${c.anexos.length})</h3>` +
+      c.anexos.map(a => a.isImagem
+        ? `<div style="margin-bottom:12px;"><img src="${a.embedUrl}" alt="${a.nome}" style="max-width:100%;border-radius:10px;border:1px solid var(--borda);"><div style="font-size:.72rem;color:var(--cinza);margin-top:4px;">${a.nome}</div></div>`
+        : `<div style="margin-bottom:8px;"><a href="${a.url}" target="_blank" rel="noopener" style="display:inline-block;background:#F0FDF9;border:1px solid #CBE8E0;border-radius:8px;padding:9px 13px;font-size:.8rem;color:var(--verde-claro);text-decoration:none;font-weight:600;">📎 ${a.nome}</a></div>`
+      ).join('');
+  }
   let html = `
     <div class="modal-total">
       <span>📢 ${c.titulo}</span>
@@ -1619,7 +1714,8 @@ async function abrirComunicado(id){
       <div class="meta">👥 Destinatários: ${qtdDest} usuário(s)</div>
     </div>
     <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:11px 0;font-family:'Poppins',sans-serif;">📝 Mensagem</h3>
-    <div style="font-size:.88rem;background:#F7FAF9;padding:15px;border-radius:10px;line-height:1.6;white-space:pre-line;">${c.mensagem}</div>`;
+    <div style="font-size:.88rem;background:#F7FAF9;padding:15px;border-radius:10px;line-height:1.6;white-space:pre-line;">${c.mensagem}</div>
+    ${anexosHTML}`;
 
   if(sessao.perfil === 'ADM'){
     html += `<div class="acoes" style="margin-top:16px;">
