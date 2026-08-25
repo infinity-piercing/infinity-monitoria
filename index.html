@@ -611,11 +611,10 @@ async function api(acao, dados = {}){
     const texto = await r.text();
     try {
       return JSON.parse(texto);
-    } 
-      } catch(e){
+    } catch(e){
       console.error('Resposta não-JSON (veio HTML):', texto.slice(0,200));
       toastErro('A planilha retornou uma resposta inválida. Reimplante o Apps Script (Implantar → Nova implantação) e tente de novo.');
-      return { ok:false, erro:'Resposta inválida da planilha' };
+      return { ok:false, erro:'Resposta inválida da planilha (reimplante o Apps Script)' };
     }
   }catch(e){
     toastErro('Falha ao conectar com a planilha: ' + e.message);
@@ -870,15 +869,18 @@ function salvarConexao(){
   toastSucesso('Conexão salva! O sistema agora grava na planilha.');
 }
 
-/* ============ LOGIN ============ */
+/* ============ LOGIN (CORRIGIDO: mostra o erro real do servidor) ============ */
 async function autenticar(login, senha){
   if(modoPlanilha()){
     const r = await api('login', { login, senha });
-    return r.ok ? r.usuario : null;
+    if(r && r.ok && r.usuario) return { usuario: r.usuario, erro: null };
+    return { usuario: null, erro: (r && r.erro) ? r.erro : 'Falha ao conectar com a planilha.' };
   }
   const lista = carregar(CHAVE_USER, USUARIOS_DEMO);
   const u = lista.find(x => String(x.login).toLowerCase() === login.toLowerCase() && x.senha === senha);
-  return u ? { login: u.login, perfil: u.perfil, nome: u.nome } : null;
+  return u
+    ? { usuario: { login: u.login, perfil: u.perfil, nome: u.nome }, erro: null }
+    : { usuario: null, erro: 'Usuário ou senha incorretos.' };
 }
 
 async function fazerLogin(){
@@ -897,12 +899,12 @@ async function fazerLogin(){
     if(erro){ erro.textContent = 'Senha fraca. Use letras, números e símbolos (ex: Amor@2026).'; erro.style.display = 'block'; }
     return;
   }
-  const user = await autenticar(login, senha);
-  if(!user){
-    if(erro){ erro.textContent = 'Usuário ou senha incorretos.'; erro.style.display = 'block'; }
+  const resultado = await autenticar(login, senha);
+  if(!resultado || !resultado.usuario){
+    if(erro){ erro.textContent = (resultado && resultado.erro) ? resultado.erro : 'Usuário ou senha incorretos.'; erro.style.display = 'block'; }
     return;
   }
-  sessao = user;
+  sessao = resultado.usuario;
   if(erro) erro.style.display = 'none';
   await entrarSistema();
 }
