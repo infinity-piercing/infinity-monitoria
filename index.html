@@ -68,9 +68,12 @@ h1,h2,h3,.titulo{font-family:'Poppins',sans-serif;}
 .questao .q-texto{font-size:.88rem;font-weight:500;line-height:1.45;}
 .nota{font-size:1.2rem;font-weight:800;color:var(--verde-claro);min-width:42px;text-align:center;font-family:'Poppins',sans-serif;}
 input[type=range].slider{-webkit-appearance:none;appearance:none;width:100%;height:9px;border-radius:20px;margin-top:10px;background:linear-gradient(to right,var(--verde-claro) var(--val,0%),#E5EBE9 var(--val,0%));outline:none;cursor:pointer;}
+input[type=range].slider:disabled{opacity:.35;cursor:not-allowed;}
 input[type=range].slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3.5px solid var(--verde-claro);box-shadow:0 2px 8px rgba(10,49,43,.3);cursor:pointer;}
 input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3.5px solid var(--verde-claro);cursor:pointer;}
 .escala{display:flex;justify-content:space-between;font-size:.68rem;color:var(--cinza);margin-top:4px;}
+.na-opcao{margin-top:9px;display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--cinza);cursor:pointer;user-select:none;}
+.na-opcao input{width:auto;accent-color:var(--verde-claro);transform:scale(1.15);cursor:pointer;margin:0;}
 .peso-info{font-size:.68rem;color:var(--cinza);background:#F3F6F5;display:inline-block;padding:2px 9px;border-radius:10px;margin-top:6px;}
 .apontamento{margin-top:10px;}
 .apontamento label{font-size:.72rem;font-weight:600;color:var(--cinza);}
@@ -159,6 +162,15 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
 .descricao-html b{font-weight:700;}
 .descricao-html i{font-style:italic;}
 .descricao-html mark{background:#FFF176;padding:0 2px;border-radius:3px;}
+/* ===== RESUMO E FEEDBACK ===== */
+.bloco-final{background:linear-gradient(135deg,#F0FDF9,#E6F6F2);border:1px solid #CBE8E0;border-radius:14px;padding:18px 20px;margin-top:18px;}
+.bloco-final h3{font-size:.95rem;color:var(--verde-escuro);margin-bottom:12px;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:8px;}
+.bloco-final .campo{margin-bottom:14px;}
+.bloco-final .campo:last-child{margin-bottom:0;}
+.bloco-final label{display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:6px;}
+.bloco-final textarea{width:100%;padding:11px 13px;border:1.5px solid var(--borda);border-radius:10px;font-size:.86rem;font-family:'Inter',sans-serif;resize:vertical;line-height:1.55;background:#fff;transition:border-color .15s,box-shadow .15s;}
+.bloco-final textarea:focus{outline:none;border-color:var(--verde-claro);box-shadow:0 0 0 3px rgba(18,112,94,.15);}
+.bloco-final .obrigatorio{color:var(--vermelho);font-weight:700;font-size:.68rem;}
 @media (max-width:760px){.grid2,.grid3,.grid4{grid-template-columns:1fr;}.nav-guias{padding:0 10px;}.guia{padding:12px 12px;font-size:.8rem;}}
 </style>
 </head>
@@ -221,7 +233,7 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
     <div class="painel ativo" id="painelQualidade">
       <div class="card" id="cardNovaAvaliacao">
         <h2>📝 Nova avaliação de atendimento</h2>
-        <div class="aviso-help">💡 <strong>Antes de pontuar:</strong> abra a conversa no Salesmartly em outra aba e confira nas Informações Básicas o contato do cliente (número ou @). O contato é obrigatório para auditoria. A nota é ponderada por categoria e nunca ultrapassa 100 pontos.</div>
+        <div class="aviso-help">💡 <strong>Antes de pontuar:</strong> abra a conversa no Salesmartly em outra aba e confira nas Informações Básicas o contato do cliente (número ou @). O contato é obrigatório para auditoria. A nota é ponderada por categoria e nunca ultrapassa 100 pontos. <strong>Use "N/A"</strong> quando a questão não se aplicar àquele contato — ela sai do cálculo e a nota é recalculada sobre as questões aplicáveis.</div>
         <div class="grid2">
           <div class="campo">
             <label>💬 Canal do contato *</label>
@@ -275,6 +287,18 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
             <div style="font-size:.72rem;color:var(--cinza);">/ 100 pontos (ponderado)</div>
           </div>
           <span class="classificacao" id="classificacao" style="background:var(--cinza);">Aguardando</span>
+        </div>
+        <div class="bloco-final">
+          <h3>📝 Resumo do atendimento</h3>
+          <div class="campo">
+            <label>Resumo geral do contato *</label>
+            <textarea id="resumoAvaliacao" rows="3" placeholder="Descreva, em poucas linhas, como foi o atendimento de forma geral..."></textarea>
+          </div>
+          <h3>💬 Feedback para o atendente</h3>
+          <div class="campo">
+            <label>Feedback construtivo (pontos fortes e o que melhorar) *</label>
+            <textarea id="feedbackAvaliacao" rows="3" placeholder="Escreva um feedback claro e encorajador para o atendente crescer..."></textarea>
+          </div>
         </div>
         <div style="display:flex; gap:10px; margin-top:18px;">
           <button class="btn btn-primario" style="flex:1;" onclick="enviarAvaliacao()">📤 Enviar avaliação</button>
@@ -624,9 +648,8 @@ async function api(acao, dados = {}){
       body: JSON.stringify({ acao, perfil: sessao ? sessao.perfil : '', ...dados })
     });
     const texto = await r.text();
-    try {
-      return JSON.parse(texto);
-    } catch(e){
+    try { return JSON.parse(texto); }
+    catch(e){
       console.error('Resposta não-JSON (veio HTML):', texto.slice(0,200));
       toastErro('A planilha retornou uma resposta inválida. Reimplante o Apps Script (Implantar → Nova implantação) e tente de novo.');
       return { ok:false, erro:'Resposta inválida da planilha (reimplante o Apps Script)' };
@@ -722,7 +745,6 @@ async function obterComunicados(){
   } else {
     lista = carregar(CHAVE_COM, []);
   }
-  /* CORREÇÃO: garante mais recentes no topo */
   lista = (Array.isArray(lista) ? lista : []).sort((a, b) => new Date(b.data) - new Date(a.data));
   cacheComunicados = lista;
   return cacheComunicados;
@@ -823,7 +845,7 @@ const QUESTOES_PADRAO = [
   { cat:2, texto:'Aplicou o processo de pós-venda (acompanhamento do pedido e da entrega)?' },
   { cat:3, texto:'Abriu e identificou corretamente o contato na plataforma (cliente certo, canal certo)?' },
   { cat:3, texto:'Registrou o resumo do atendimento com informações completas e organizadas?' },
-  { cat:3, texto:'Utilizou os recursos de registro da plataforma (etiquetas, status, anotações) corretamente?' },
+  { cat:3, texto:'Utilizou os recursos de registro da plataforma (etiquetas, status, anotações internas) corretamente?' },
   { cat:3, texto:'Atualizou o status e os próximos passos ao final do contato, deixando o histórico pronto para follow-up?' }
 ];
 
@@ -993,7 +1015,7 @@ function renderAvaliados(){
   sel.innerHTML = html;
 }
 
-/* ============ QUESTÕES — FORMULÁRIO ============ */
+/* ============ QUESTÕES — FORMULÁRIO (com opção N/A) ============ */
 function renderQuestoes(){
   const wrapper = byId('listaQuestoes');
   if(!wrapper) return;
@@ -1010,15 +1032,19 @@ function renderQuestoes(){
       }
       const vm = valorMaxQuestao(i);
       html += `
-        <div class="questao">
+        <div class="questao" id="questao${i}">
           <div class="q-top">
             <div class="q-texto">${i+1}. ${q.texto}</div>
             <div class="nota" id="nota${i}">0</div>
           </div>
           <input type="range" class="slider" min="0" max="10" step="1" value="0" id="q${i}" oninput="atualizarNota(${i})">
           <div class="escala"><span>0 — Não atendeu</span><span>10 — Atendeu plenamente</span></div>
-          <span class="peso-info">⚖️ Vale até ${vm.toFixed(2).replace('.',',')} pts nesta nota</span>
-          <div class="apontamento">
+          <span class="peso-info" id="pesoInfo${i}">⚖️ Vale até ${vm.toFixed(2).replace('.',',')} pts nesta nota</span>
+          <label class="na-opcao">
+            <input type="checkbox" id="na${i}" onchange="marcarNA(${i})">
+            <span>N/A — Não se aplica a este contato</span>
+          </label>
+          <div class="apontamento" id="apontBox${i}">
             <label>✏️ Apontamento <span class="obrigatorio">(obrigatório se a nota for menor que 7)</span></label>
             <textarea id="apont${i}" placeholder="O que precisa melhorar / observação..."></textarea>
           </div>
@@ -1039,6 +1065,35 @@ function sliderPreenche(el){
   const pct = ((Number(el.value) - min) / (max - min)) * 100;
   el.style.setProperty('--val', pct + '%');
 }
+function marcarNA(i){
+  const chk = byId('na'+i);
+  const slider = byId('q'+i);
+  const apont = byId('apont'+i);
+  const apontBox = byId('apontBox'+i);
+  const nota = byId('nota'+i);
+  const pesoInfo = byId('pesoInfo'+i);
+  const questao = byId('questao'+i);
+  if(chk.checked){
+    slider.disabled = true;
+    slider.value = 0;
+    sliderPreenche(slider);
+    nota.textContent = 'N/A';
+    nota.style.color = 'var(--cinza)';
+    if(apont) apont.value = '';
+    if(apontBox) apontBox.style.display = 'none';
+    if(pesoInfo) pesoInfo.textContent = '⚖️ Excluída do cálculo (N/A)';
+    if(questao) questao.style.opacity = '0.6';
+  } else {
+    slider.disabled = false;
+    nota.textContent = '0';
+    nota.style.color = 'var(--verde-claro)';
+    if(apontBox) apontBox.style.display = '';
+    const vm = valorMaxQuestao(i);
+    if(pesoInfo) pesoInfo.textContent = '⚖️ Vale até ' + vm.toFixed(2).replace('.',',') + ' pts nesta nota';
+    if(questao) questao.style.opacity = '1';
+  }
+  calcularTotal();
+}
 function atualizarNota(i){
   const n = byId('nota'+i); if(n) n.textContent = byId('q'+i).value;
   sliderPreenche(byId('q'+i));
@@ -1047,14 +1102,20 @@ function atualizarNota(i){
 function calcularTotal(){
   garantirQuestoes();
   let total = 0;
+  let aplicaveis = 0;
   questoes.forEach((q, i) => {
+    const na = byId('na'+i);
+    if(na && na.checked) return;
     const el = byId('q'+i);
-    total += el ? (Number(el.value) / 10) * valorMaxQuestao(i) : 0;
+    if(!el) return;
+    total += (Number(el.value) / 10) * valorMaxQuestao(i);
+    aplicaveis++;
   });
   total = Math.round(total * 10) / 10;
   const t = byId('totalNota'); if(t) t.textContent = total;
   const c = byId('classificacao');
   if(!c) return;
+  if(aplicaveis === 0){ c.textContent = 'Sem itens'; c.style.background = 'var(--cinza)'; return; }
   if(total >= 90){ c.textContent = 'Excelente'; c.style.background = '#16A34A'; }
   else if(total >= 75){ c.textContent = 'Bom'; c.style.background = '#22C55E'; }
   else if(total >= 60){ c.textContent = 'Regular'; c.style.background = '#F59E0B'; }
@@ -1067,12 +1128,18 @@ async function enviarAvaliacao(){
   const contato = byId('contatoCliente').value.trim();
   const avaliado = byId('avaliado').value;
   const dtContato = byId('dtContato').value;
+  const resumo = byId('resumoAvaliacao').value.trim();
+  const feedback = byId('feedbackAvaliacao').value.trim();
   if(!contato){ toastErro('Informe o contato do cliente (número ou @Instagram).'); return; }
   if(!avaliado){ toastErro('Selecione o atendente avaliado na lista suspensa.'); return; }
   if(!dtContato){ toastErro('Informe a data e hora do contato.'); return; }
+  if(!resumo){ toastErro('Preencha o campo Resumo do atendimento.'); return; }
+  if(!feedback){ toastErro('Preencha o campo Feedback para o atendente.'); return; }
 
   const faltantes = [];
   questoes.forEach((q, i) => {
+    const na = byId('na'+i);
+    if(na && na.checked) return;
     const nota = Number(byId('q'+i).value);
     const apont = byId('apont'+i).value.trim();
     if(nota < 7 && !apont) faltantes.push(i+1);
@@ -1093,13 +1160,19 @@ async function enviarAvaliacao(){
     avaliador: sessao.nome,
     total: Number(byId('totalNota').textContent),
     classificacao: byId('classificacao').textContent,
-    respostas: questoes.map((q,i)=>({
-      questao: q.texto,
-      categoria: CATEGORIAS[q.cat].nome,
-      nota: Number(byId('q'+i).value),
-      valorMax: Math.round(valorMaxQuestao(i) * 100) / 100,
-      apontamento: byId('apont'+i).value.trim()
-    })),
+    resumo,
+    feedback,
+    respostas: questoes.map((q,i)=>{
+      const na = byId('na'+i);
+      return {
+        questao: q.texto,
+        categoria: CATEGORIAS[q.cat].nome,
+        nota: (na && na.checked) ? null : Number(byId('q'+i).value),
+        na: !!(na && na.checked),
+        valorMax: Math.round(valorMaxQuestao(i) * 100) / 100,
+        apontamento: (na && na.checked) ? '' : byId('apont'+i).value.trim()
+      };
+    }),
     status: 'Pendente',
     historico: [{ data: new Date().toISOString(), por: sessao.nome, acao: 'enviada', detalhe: 'Avaliação enviada' }]
   };
@@ -1115,9 +1188,18 @@ function limparFormulario(){
   const a = byId('avaliado'); if(a) a.value = '';
   const d = byId('dtContato'); if(d) d.value = '';
   const da = byId('dtAvaliacao'); if(da) da.value = dataHoraNoFuso(fusoSelecionado);
+  const rs = byId('resumoAvaliacao'); if(rs) rs.value = '';
+  const fb = byId('feedbackAvaliacao'); if(fb) fb.value = '';
   questoes.forEach((_, i) => {
-    const el = byId('q'+i); if(el){ el.value = 0; sliderPreenche(el); }
+    const na = byId('na'+i);
+    if(na && na.checked) na.checked = false;
+    const el = byId('q'+i); if(el){ el.disabled = false; el.value = 0; sliderPreenche(el); }
     const ap = byId('apont'+i); if(ap) ap.value = '';
+    const apBox = byId('apontBox'+i); if(apBox) apBox.style.display = '';
+    const no = byId('nota'+i); if(no){ no.textContent = '0'; no.style.color = 'var(--verde-claro)'; }
+    const q = byId('questao'+i); if(q) q.style.opacity = '1';
+    const pi = byId('pesoInfo'+i);
+    if(pi){ const vm = valorMaxQuestao(i); pi.textContent = '⚖️ Vale até ' + vm.toFixed(2).replace('.',',') + ' pts nesta nota'; }
   });
   calcularTotal();
 }
@@ -1143,7 +1225,7 @@ async function renderAvaliacoes(){
     return;
   }
   div.innerHTML = avals.map(a => {
-    const apontamentos = (a.respostas || []).filter(r => r.nota < 7).map(r => `• ${r.questao}: ${r.apontamento}`).join('<br>') || '—';
+    const apontamentos = (a.respostas || []).filter(r => !r.na && r.nota < 7).map(r => `• ${r.questao}: ${r.apontamento}`).join('<br>') || '—';
     const stClass = statusClass(a.status);
     const contatoInfo = a.contato
       ? ' | Contato: ' + a.contato
@@ -1216,6 +1298,17 @@ function abrirAvaliacao(id){
     </div>
     <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:12px 0 7px;font-family:'Poppins',sans-serif;">📋 Questões e apontamentos</h3>`;
   (a.respostas || []).forEach((r, i) => {
+    if(r.na){
+      html += `
+        <div class="questao" style="opacity:.6;">
+          <div class="q-top">
+            <div class="q-texto">${i+1}. ${r.questao}</div>
+            <div class="nota" style="color:var(--cinza);font-size:.9rem;">N/A</div>
+          </div>
+          <span class="peso-info">⚖️ Não se aplicou a este contato</span>
+        </div>`;
+      return;
+    }
     const vm = valorMaxDe(r);
     html += `
       <div class="questao">
@@ -1230,6 +1323,11 @@ function abrirAvaliacao(id){
         </div>
       </div>`;
   });
+
+  html += `<h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 7px;font-family:'Poppins',sans-serif;">📝 Resumo do atendimento</h3>
+    <div class="bloco-texto" style="background:#F0FDF9;border:1px solid #CBE8E0;">${a.resumo || '—'}</div>
+    <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 7px;font-family:'Poppins',sans-serif;">💬 Feedback para o atendente</h3>
+    <div class="bloco-texto" style="background:#F0FDF9;border:1px solid #CBE8E0;">${a.feedback || '—'}</div>`;
 
   if(a.contestacao && a.contestacao.length){
     html += `<h3 style="font-size:.86rem;color:var(--vermelho);margin:15px 0 7px;font-family:'Poppins',sans-serif;">⚠️ Contestações do atendente</h3>`;
@@ -1310,7 +1408,7 @@ function aceitarAvaliacao(id){
 function contestarAvaliacao(id){
   const a = cacheAvaliacoes.find(x => x.id === id);
   if(!a) return;
-  const comApontamento = (a.respostas || []).map((r, idx) => ({ r, idx })).filter(x => x.r.apontamento && x.r.apontamento.trim() !== '');
+  const comApontamento = (a.respostas || []).map((r, idx) => ({ r, idx })).filter(x => !x.r.na && x.r.apontamento && x.r.apontamento.trim() !== '');
   let html = `
     <div class="modal-total">
       <span>🎯 ${a.avaliado}</span>
@@ -1475,6 +1573,20 @@ function resumirHTML(html, max){
 function htmlOuTexto(v){
   if(!v) return '';
   return String(v).indexOf('<') === -1 ? paraHTML(v) : v;
+}
+function anexoQuebrado(img){
+  const url = img.getAttribute('data-url');
+  img.outerHTML = '<div style="text-align:center;padding:18px;background:#F7FAF9;border:1px dashed #CBE8E0;border-radius:10px;">Imagem indisponível aqui — <a href="' + url + '" target="_blank" rel="noopener" style="color:var(--verde-claro);font-weight:600;">abrir no Google Drive ↗</a></div>';
+}
+function htmlAnexoImagem(a){
+  const src = a.thumbUrl || a.embedUrl || a.url;
+  const nome = String(a.nome || 'Arquivo').replace(/"/g, '&quot;');
+  return '<div style="margin-bottom:14px;">' +
+    '<a href="' + a.url + '" target="_blank" rel="noopener">' +
+    '<img src="' + src + '" alt="' + nome + '" data-url="' + a.url + '" style="max-width:100%;border-radius:10px;border:1px solid var(--borda);cursor:pointer;" onerror="anexoQuebrado(this)">' +
+    '</a>' +
+    '<div style="font-size:.72rem;color:var(--cinza);margin-top:4px;"><a href="' + a.url + '" target="_blank" rel="noopener">' + nome + ' ↗</a></div>' +
+    '</div>';
 }
 
 /* ============ PROCESSOS ============ */
@@ -1663,10 +1775,7 @@ async function enviarArquivosArte(files){
       const b64 = await lerArquivoBase64(f);
       const r = await api('uploadArquivo', { nome: f.name, mime: f.type || 'application/octet-stream', base64: b64 });
       if(r && r.ok && r.anexo){ anexos.push(r.anexo); }
-      else {
-        /* CORREÇÃO: mostra o motivo real do erro do servidor */
-        toastErro('Não foi possível enviar ' + f.name + (r && r.erro ? ': ' + r.erro : '') + '.');
-      }
+      else { toastErro('Não foi possível enviar ' + f.name + (r && r.erro ? ': ' + r.erro : '') + '.'); }
     }catch(e){ toastErro('Falha ao enviar ' + f.name + ': ' + e.message); }
   }
   return anexos;
@@ -1696,7 +1805,6 @@ async function criarComunicado(){
 }
 async function renderComunicados(){
   await obterComunicados();
-  /* CORREÇÃO: ordena novamente do mais recente para o mais antigo */
   const coms = cacheComunicados
     .filter(c => (c.destinatarios || []).includes(sessao.login))
     .sort((a, b) => new Date(b.data) - new Date(a.data));
@@ -1738,8 +1846,8 @@ async function abrirComunicado(id){
   if(c.anexos && c.anexos.length){
     anexosHTML = `<h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 8px;font-family:'Poppins',sans-serif;">📎 Anexos (${c.anexos.length})</h3>` +
       c.anexos.map(a => a.isImagem
-        ? `<div style="margin-bottom:12px;"><img src="${a.embedUrl}" alt="${a.nome}" style="max-width:100%;border-radius:10px;border:1px solid var(--borda);"><div style="font-size:.72rem;color:var(--cinza);margin-top:4px;">${a.nome}</div></div>`
-        : `<div style="margin-bottom:8px;"><a href="${a.url}" target="_blank" rel="noopener" style="display:inline-block;background:#F0FDF9;border:1px solid #CBE8E0;border-radius:8px;padding:9px 13px;font-size:.8rem;color:var(--verde-claro);text-decoration:none;font-weight:600;">📎 ${a.nome}</a></div>`
+        ? htmlAnexoImagem(a)
+        : `<div style="margin-bottom:8px;"><a href="${a.url}" target="_blank" rel="noopener" style="display:inline-block;background:#F0FDF9;border:1px solid #CBE8E0;border-radius:8px;padding:9px 13px;font-size:.8rem;color:var(--verde-claro);text-decoration:none;font-weight:600;">📎 ${String(a.nome || 'Arquivo')}</a></div>`
       ).join('');
   }
   let html = `
@@ -1866,6 +1974,7 @@ async function renderDashboard(){
     let somaPts = 0, maxPts = 0;
     avals.forEach(a => {
       (a.respostas || []).forEach(r => {
+        if(r.na) return;
         const i = questoes.findIndex(q => q.texto === r.questao);
         if(i >= 0 && questoes[i].cat === ci){ somaPts += (r.nota / 10) * valorMaxDe(r); }
       });
@@ -1880,7 +1989,7 @@ async function renderDashboard(){
 
   const top = {};
   avals.forEach(a => (a.respostas || []).forEach(r => {
-    if(r.nota < 7 && r.apontamento){
+    if(!r.na && r.nota < 7 && r.apontamento){
       if(!top[r.questao]) top[r.questao] = { count:0, exemplo:r.apontamento };
       top[r.questao].count++;
     }
