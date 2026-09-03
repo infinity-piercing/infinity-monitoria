@@ -402,7 +402,7 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
       <div class="card">
         <h2>📥 Central de comunicados</h2>
         <button class="btn btn-primario" id="btnNovoComunicado" style="width:auto; padding:11px 18px; margin-bottom:14px;" onclick="abrirNovoComunicado()">➕ Novo comunicado</button>
-        <div class="dica-clique">💡 Clique em um comunicado para abrir o conteúdo completo.</div>
+        <div class="dica-clique">💡 Clique em um comunicado para abrir o conteúdo completo e confirmar a leitura com o botão "Ciente".</div>
         <div id="listaComunicados"></div>
       </div>
     </div>
@@ -763,6 +763,14 @@ async function marcarLidoBackend(id){
     const lista = carregar(CHAVE_COM, []);
     const c = lista.find(x => x.id === id);
     if(c && !c.lidoPor.includes(sessao.login)){ c.lidoPor.push(sessao.login); salvar(CHAVE_COM, lista); }
+  }
+}
+async function marcarCienteBackend(id){
+  if(modoPlanilha()){ await api('marcarCiente', { id, login: sessao.login }); }
+  else {
+    const lista = carregar(CHAVE_COM, []);
+    const c = lista.find(x => x.id === id);
+    if(c && !c.cientePor.includes(sessao.login)){ c.cientePor.push(sessao.login); salvar(CHAVE_COM, lista); }
   }
 }
 
@@ -1728,7 +1736,7 @@ function destinatariosDe(perfis, logins){
   return [...set];
 }
 async function gerarComunicado(titulo, mensagem, destinatarios, tipo, refId, anexos){
-  const c = { id: Date.now(), titulo, mensagem, data: new Date().toISOString(), tipo, refId, destinatarios, lidoPor: [], anexos: anexos || [] };
+  const c = { id: Date.now(), titulo, mensagem, data: new Date().toISOString(), tipo, refId, destinatarios, lidoPor: [], anexos: anexos || [], cientePor: [] };
   await gravarComunicado(c);
 }
 async function atualizarBadgeComunicados(){
@@ -1816,23 +1824,68 @@ async function renderComunicados(){
   }
   div.innerHTML = coms.map(c => {
     const naoLido = !(c.lidoPor || []).includes(sessao.login);
+    const meuCiente = (c.cientePor || []).includes(sessao.login);
     const podeExcluir = sessao.perfil === 'ADM';
     const anexosBadge = (c.anexos && c.anexos.length) ? `<span class="c-tipo" style="background:#EDE9FE;color:#6D28D9;">📎 ${c.anexos.length} anexo(s)</span>` : '';
+    const cienteBadge = meuCiente ? `<span class="c-tipo" style="background:#DCFCE7;color:#16A34A;">✅ Ciente dado</span>` : '';
     return `
     <div class="comunicado ${naoLido ? 'nao-lido' : ''}" onclick="abrirComunicado(${c.id})">
       <div class="c-top">
         <span class="c-titulo">${c.titulo} ${naoLido ? '<span class="nao-lido-flag">NOVO</span>' : ''}</span>
         <span class="c-data">${fmtData(c.data)}</span>
       </div>
-      <span class="c-tipo">${c.tipo === 'avaliacao' ? 'Avaliação' : c.tipo === 'processo' ? 'Processo' : 'Geral'}</span>${anexosBadge}
+      <span class="c-tipo">${c.tipo === 'avaliacao' ? 'Avaliação' : c.tipo === 'processo' ? 'Processo' : 'Geral'}</span>${anexosBadge}${cienteBadge}
       <div class="c-msg">${resumirHTML(c.mensagem, 160)}</div>
       <div class="c-rodape">
-        <span class="c-resumo">🔍 Clique para abrir o comunicado completo</span>
+        <span class="c-resumo">🔍 Clique para abrir e confirmar a leitura</span>
         ${podeExcluir ? `<button class="btn-peq btn-vermelho" onclick="event.stopPropagation();excluirComunicado(${c.id})">🗑️ Excluir</button>` : ''}
       </div>
     </div>`;
   }).join('');
 }
+
+/* ===== VISIBILIDADE DE LEITURA E CIENTE (só ADM) ===== */
+function visibilidadeComunicadoHTML(c){
+  const destinos = c.destinatarios || [];
+  const lidos = c.lidoPor || [];
+  const cientes = c.cientePor || [];
+  const mapaNomes = {};
+  (usuarios || []).forEach(u => { mapaNomes[u.login] = u.nome; });
+  const qtdCiente = cientes.filter(l => destinos.includes(l)).length;
+  const qtdLidos = lidos.filter(l => destinos.includes(l)).length;
+  let rows = '';
+  destinos.forEach(login => {
+    const nome = mapaNomes[login] || login;
+    const viu = lidos.includes(login);
+    const ciente = cientes.includes(login);
+    rows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-bottom:1px solid #E5EBE9;font-size:.8rem;">
+      <span>${nome} <span style="color:var(--cinza);font-size:.72rem;">(${login})</span></span>
+      <span style="display:flex;gap:14px;font-size:.72rem;font-weight:600;">
+        <span style="color:${viu ? '#16A34A' : '#9CA3AF'};">👁️ ${viu ? 'Viu' : 'Não viu'}</span>
+        <span style="color:${ciente ? '#16A34A' : '#9CA3AF'};">✅ ${ciente ? 'Ciente' : 'Pendente'}</span>
+      </span>
+    </div>`;
+  });
+  return `<h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 8px;font-family:'Poppins',sans-serif;">👥 Confirmações (${qtdCiente}/${destinos.length} cientes • ${qtdLidos}/${destinos.length} viram)</h3>
+    <div style="background:#F7FAF9;border:1px solid var(--borda);border-radius:10px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#E6F4F0;font-size:.72rem;font-weight:700;color:var(--verde-escuro);">
+        <span>Usuário</span><span style="display:flex;gap:14px;"><span>👁️ Leitura</span><span>✅ Ciente</span></span>
+      </div>
+      ${rows || '<div style="padding:10px;color:var(--cinza);font-size:.8rem;">Sem destinatários registrados.</div>'}
+    </div>`;
+}
+
+async function darCiente(id){
+  const c = cacheComunicados.find(x => x.id === id);
+  if(!c) return;
+  if((c.cientePor || []).includes(sessao.login)){ toastInfo('Você já registrou seu ciente neste comunicado.'); return; }
+  await marcarCienteBackend(id);
+  await renderComunicados();
+  await atualizarBadgeComunicados();
+  abrirComunicado(id);
+  toastSucesso('Ciente registrado! Obrigado pela confirmação de leitura.');
+}
+
 async function abrirComunicado(id){
   const c = cacheComunicados.find(x => x.id === id);
   if(!c) return;
@@ -1842,6 +1895,7 @@ async function abrirComunicado(id){
 
   const qtdDest = (c.destinatarios || []).length;
   const msgHTML = htmlOuTexto(c.mensagem);
+  const meuCiente = (c.cientePor || []).includes(sessao.login);
   let anexosHTML = '';
   if(c.anexos && c.anexos.length){
     anexosHTML = `<h3 style="font-size:.86rem;color:var(--verde-escuro);margin:15px 0 8px;font-family:'Poppins',sans-serif;">📎 Anexos (${c.anexos.length})</h3>` +
@@ -1849,6 +1903,18 @@ async function abrirComunicado(id){
         ? htmlAnexoImagem(a)
         : `<div style="margin-bottom:8px;"><a href="${a.url}" target="_blank" rel="noopener" style="display:inline-block;background:#F0FDF9;border:1px solid #CBE8E0;border-radius:8px;padding:9px 13px;font-size:.8rem;color:var(--verde-claro);text-decoration:none;font-weight:600;">📎 ${String(a.nome || 'Arquivo')}</a></div>`
       ).join('');
+  }
+  let cienteArea = '';
+  if(meuCiente){
+    cienteArea = `<div style="margin-top:14px;background:#DCFCE7;border:1px solid #86EFAC;border-radius:10px;padding:12px 14px;font-size:.82rem;color:#166534;display:flex;align-items:center;gap:8px;">✅ Você já deu ciente neste comunicado. Obrigado!</div>`;
+  } else {
+    cienteArea = `<div style="margin-top:14px;text-align:center;">
+      <button class="btn btn-primario" style="width:auto;padding:11px 26px;" onclick="darCiente(${c.id})">✅ Registrar ciente (li o comunicado)</button>
+    </div>`;
+  }
+  let visibilidadeHTML = '';
+  if(sessao.perfil === 'ADM'){
+    visibilidadeHTML = visibilidadeComunicadoHTML(c);
   }
   let html = `
     <div class="modal-total">
@@ -1861,7 +1927,9 @@ async function abrirComunicado(id){
     </div>
     <h3 style="font-size:.86rem;color:var(--verde-escuro);margin:11px 0;font-family:'Poppins',sans-serif;">📝 Mensagem</h3>
     <div class="descricao-html">${msgHTML}</div>
-    ${anexosHTML}`;
+    ${anexosHTML}
+    ${cienteArea}
+    ${visibilidadeHTML}`;
 
   if(sessao.perfil === 'ADM'){
     html += `<div class="acoes" style="margin-top:16px;">
