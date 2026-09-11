@@ -233,7 +233,7 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
     <div class="painel ativo" id="painelQualidade">
       <div class="card" id="cardNovaAvaliacao">
         <h2>📝 Nova avaliação de atendimento</h2>
-        <div class="aviso-help">💡 <strong>Antes de pontuar:</strong> abra a conversa no Salesmartly em outra aba e confira nas Informações Básicas o contato do cliente (número ou @). O contato é obrigatório para auditoria. A nota é ponderada por categoria e nunca ultrapassa 100 pontos. <strong>Use "N/A"</strong> quando a questão não se aplicar àquele contato — ela sai do cálculo e a nota é recalculada sobre as questões aplicáveis.</div>
+        <div class="aviso-help">💡 <strong>Antes de pontuar:</strong> abra a conversa no Salesmartly em outra aba e confira nas Informações Básicas o contato do cliente (número ou @). O contato é obrigatório para auditoria. A nota é ponderada por categoria e nunca ultrapassa 100 pontos. <strong>Use "N/A"</strong> quando a questão não se aplicar àquele contato — ela é <strong>contabilizada com nota máxima (10/10)</strong>, sem penalizar o atendente.</div>
         <div class="grid2">
           <div class="campo">
             <label>💬 Canal do contato *</label>
@@ -1089,7 +1089,7 @@ function marcarNA(i){
     nota.style.color = 'var(--cinza)';
     if(apont) apont.value = '';
     if(apontBox) apontBox.style.display = 'none';
-    if(pesoInfo) pesoInfo.textContent = '⚖️ Excluída do cálculo (N/A)';
+    if(pesoInfo) pesoInfo.textContent = '⚖️ Contabilizada com nota máxima (10/10)';
     if(questao) questao.style.opacity = '0.6';
   } else {
     slider.disabled = false;
@@ -1110,20 +1110,21 @@ function atualizarNota(i){
 function calcularTotal(){
   garantirQuestoes();
   let total = 0;
-  let aplicaveis = 0;
   questoes.forEach((q, i) => {
     const na = byId('na'+i);
-    if(na && na.checked) return;
     const el = byId('q'+i);
     if(!el) return;
-    total += (Number(el.value) / 10) * valorMaxQuestao(i);
-    aplicaveis++;
+    if(na && na.checked){
+      /* N/A recebe a nota máxima da questão */
+      total += valorMaxQuestao(i);
+    } else {
+      total += (Number(el.value) / 10) * valorMaxQuestao(i);
+    }
   });
   total = Math.round(total * 10) / 10;
   const t = byId('totalNota'); if(t) t.textContent = total;
   const c = byId('classificacao');
   if(!c) return;
-  if(aplicaveis === 0){ c.textContent = 'Sem itens'; c.style.background = 'var(--cinza)'; return; }
   if(total >= 90){ c.textContent = 'Excelente'; c.style.background = '#16A34A'; }
   else if(total >= 75){ c.textContent = 'Bom'; c.style.background = '#22C55E'; }
   else if(total >= 60){ c.textContent = 'Regular'; c.style.background = '#F59E0B'; }
@@ -1175,7 +1176,7 @@ async function enviarAvaliacao(){
       return {
         questao: q.texto,
         categoria: CATEGORIAS[q.cat].nome,
-        nota: (na && na.checked) ? null : Number(byId('q'+i).value),
+        nota: (na && na.checked) ? 10 : Number(byId('q'+i).value),
         na: !!(na && na.checked),
         valorMax: Math.round(valorMaxQuestao(i) * 100) / 100,
         apontamento: (na && na.checked) ? '' : byId('apont'+i).value.trim()
@@ -1313,7 +1314,7 @@ function abrirAvaliacao(id){
             <div class="q-texto">${i+1}. ${r.questao}</div>
             <div class="nota" style="color:var(--cinza);font-size:.9rem;">N/A</div>
           </div>
-          <span class="peso-info">⚖️ Não se aplicou a este contato</span>
+          <span class="peso-info">⚖️ Contabilizada com nota máxima (10/10)</span>
         </div>`;
       return;
     }
@@ -2042,9 +2043,11 @@ async function renderDashboard(){
     let somaPts = 0, maxPts = 0;
     avals.forEach(a => {
       (a.respostas || []).forEach(r => {
-        if(r.na) return;
         const i = questoes.findIndex(q => q.texto === r.questao);
-        if(i >= 0 && questoes[i].cat === ci){ somaPts += (r.nota / 10) * valorMaxDe(r); }
+        if(i >= 0 && questoes[i].cat === ci){
+          /* N/A entra com nota máxima (10/10) */
+          somaPts += (r.na ? 1 : r.nota / 10) * valorMaxDe(r);
+        }
       });
       maxPts += c.peso;
     });
