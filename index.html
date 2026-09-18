@@ -148,7 +148,6 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
 .comunicado .c-resumo{font-size:.76rem;color:var(--cinza);font-style:italic;}
 .comunicado .c-rodape{display:flex;justify-content:space-between;align-items:center;margin-top:9px;flex-wrap:wrap;gap:8px;}
 .nao-lido-flag{background:var(--vermelho);color:#fff;font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:10px;}
-/* ===== EDITOR DE TEXTO (descrição, etapas e comunicados) ===== */
 .editor-toolbar{display:flex;gap:6px;border:1.5px solid var(--borda);border-bottom:none;border-radius:10px 10px 0 0;padding:6px 8px;background:#F7FAF9;}
 .editor-toolbar button{width:34px;height:30px;border:1px solid var(--borda);background:#fff;border-radius:7px;cursor:pointer;font-size:.85rem;color:var(--verde-escuro);line-height:1;font-family:'Inter',sans-serif;}
 .editor-toolbar button:hover{background:#E6F4F0;border-color:var(--verde-claro);}
@@ -162,7 +161,6 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
 .descricao-html b{font-weight:700;}
 .descricao-html i{font-style:italic;}
 .descricao-html mark{background:#FFF176;padding:0 2px;border-radius:3px;}
-/* ===== RESUMO E FEEDBACK ===== */
 .bloco-final{background:linear-gradient(135deg,#F0FDF9,#E6F6F2);border:1px solid #CBE8E0;border-radius:14px;padding:18px 20px;margin-top:18px;}
 .bloco-final h3{font-size:.95rem;color:var(--verde-escuro);margin-bottom:12px;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:8px;}
 .bloco-final .campo{margin-bottom:14px;}
@@ -420,6 +418,15 @@ input[type=range].slider::-moz-range-thumb{width:20px;height:20px;border-radius:
           <button class="btn btn-primario" style="width:auto; padding:11px 18px;" onclick="salvarConexao()">💾 Salvar conexão</button>
           <span class="status status-pendente" id="statusConexao">Verificando...</span>
         </div>
+      </div>
+      <div class="card">
+        <h2>🩺 Diagnóstico e segurança dos dados</h2>
+        <p style="font-size:.8rem;color:var(--cinza);margin-bottom:12px;">Veja na hora qual planilha o sistema está lendo e quantos registros ele enxerga. Também dá para gerar uma cópia de segurança da planilha inteira (backup).</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-primario" style="width:auto; padding:11px 18px;" onclick="diagnosticarConexao()">🔍 Testar conexão com a planilha</button>
+          <button class="btn btn-secundario" style="width:auto; padding:11px 18px;" onclick="criarBackupClick()">💾 Criar backup da planilha</button>
+        </div>
+        <div id="resultadoDiagnostico" style="margin-top:14px;"></div>
       </div>
       <div class="card">
         <h2>👥 Usuários e perfis</h2>
@@ -1023,7 +1030,7 @@ function renderAvaliados(){
   sel.innerHTML = html;
 }
 
-/* ============ QUESTÕES — FORMULÁRIO (com opção N/A) ============ */
+/* ============ QUESTÕES — FORMULÁRIO (com opção N/A = nota máxima) ============ */
 function renderQuestoes(){
   const wrapper = byId('listaQuestoes');
   if(!wrapper) return;
@@ -1115,7 +1122,6 @@ function calcularTotal(){
     const el = byId('q'+i);
     if(!el) return;
     if(na && na.checked){
-      /* N/A recebe a nota máxima da questão */
       total += valorMaxQuestao(i);
     } else {
       total += (Number(el.value) / 10) * valorMaxQuestao(i);
@@ -1956,6 +1962,57 @@ async function marcarComunicadoLido(id){
   await atualizarBadgeComunicados();
 }
 
+/* ============ DIAGNÓSTICO E BACKUP (SÓ ADM) ============ */
+async function diagnosticarConexao(){
+  if(sessao.perfil !== 'ADM'){ toastErro('Somente ADM pode executar o diagnóstico.'); return; }
+  const div = byId('resultadoDiagnostico');
+  if(div) div.innerHTML = '<div style="font-size:.82rem;color:var(--cinza);">🔎 Verificando conexão com a planilha...</div>';
+  toastInfo('Iniciando diagnóstico...');
+  const r = await api('diagnostico');
+  if(!r || !r.ok){
+    if(div) div.innerHTML = '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:12px;font-size:.82rem;color:var(--vermelho);">⚠️ Não foi possível conectar à planilha. Verifique a URL em "Conexão com a planilha" e se o Apps Script está implantado e autorizado.<br><br>' + (r && r.erro ? 'Detalhe: ' + r.erro : '') + '</div>';
+    toastErro('Diagnóstico falhou: verifique a conexão.');
+    return;
+  }
+  let html = '<div style="background:#F0FDF9;border:1px solid #CBE8E0;border-radius:10px;padding:13px;font-size:.82rem;line-height:1.6;overflow-x:auto;">';
+  html += '<strong>📊 Planilha conectada:</strong> ' + r.planilha.nome + '<br>';
+  html += '<span style="color:var(--cinza);font-size:.75rem;">' + r.planilha.url + '</span><br><br>';
+  html += '<strong>📚 Abas encontradas:</strong><ul style="margin:6px 0 0 18px;">';
+  r.abas.forEach(aba => {
+    if(!aba.existe){
+      html += '<li style="color:var(--vermelho);">❌ ' + aba.nome + ' — não existe (será criada automaticamente)</li>';
+    } else {
+      html += '<li>✅ ' + aba.nome + ' — ' + aba.linhas + ' linha(s), ' + aba.colunas + ' coluna(s)' + (aba.jsonValidos !== undefined ? ', ' + aba.jsonValidos + ' registro(s) válido(s)' : '') + '</li>';
+    }
+  });
+  html += '</ul><br><strong>👁️ O que o sistema enxerga:</strong><ul style="margin:6px 0 0 18px;">';
+  html += '<li>📝 Avaliações: <strong>' + r.leitura.avaliacoes + '</strong></li>';
+  html += '<li>📋 Processos: <strong>' + r.leitura.processos + '</strong></li>';
+  html += '<li>📢 Comunicados: <strong>' + r.leitura.comunicados + '</strong></li>';
+  html += '</ul></div>';
+  if(div) div.innerHTML = html;
+  if(r.leitura.avaliacoes === 0 && r.leitura.processos === 0){
+    toastErro('Nenhum registro encontrado na planilha conectada. Se seus dados estão em outra planilha, atualize a URL.');
+  } else {
+    toastSucesso('Conexão OK! ' + r.leitura.avaliacoes + ' avaliação(ões) e ' + r.leitura.processos + ' processo(s) na planilha atual.');
+  }
+}
+
+async function criarBackupClick(){
+  if(sessao.perfil !== 'ADM'){ toastErro('Somente ADM pode criar backup.'); return; }
+  const div = byId('resultadoDiagnostico');
+  if(div) div.innerHTML = '<div style="font-size:.82rem;color:var(--cinza);">💾 Gerando backup (duplicando a planilha)...</div>';
+  toastInfo('Gerando backup...');
+  const r = await api('criarBackup');
+  if(r && r.ok){
+    if(div) div.innerHTML = '<div style="background:#DCFCE7;border:1px solid #86EFAC;border-radius:10px;padding:13px;font-size:.84rem;color:#166534;">✅ <strong>Backup criado!</strong><br>Nome: ' + r.nome + '<br><a href="' + r.url + '" target="_blank" rel="noopener" style="color:var(--verde-claro);font-weight:600;">Abrir no Google Drive ↗</a></div>';
+    toastSucesso('Backup criado!');
+  } else {
+    if(div) div.innerHTML = '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:12px;font-size:.82rem;color:var(--vermelho);">⚠️ Falha no backup: ' + (r && r.erro ? r.erro : 'erro desconhecido') + '</div>';
+    toastErro('Falha no backup.');
+  }
+}
+
 /* ============ DASHBOARD ============ */
 function togglePeriodo(){
   const f = byId('filtroDash').value;
@@ -2045,7 +2102,6 @@ async function renderDashboard(){
       (a.respostas || []).forEach(r => {
         const i = questoes.findIndex(q => q.texto === r.questao);
         if(i >= 0 && questoes[i].cat === ci){
-          /* N/A entra com nota máxima (10/10) */
           somaPts += (r.na ? 1 : r.nota / 10) * valorMaxDe(r);
         }
       });
